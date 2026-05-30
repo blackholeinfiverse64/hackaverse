@@ -1,0 +1,45 @@
+/* Theme Variables - Add to beginning of index.css */
+
+/* Dark Theme (Default - Starry Space) */
+body {
+  --bg-primary: #0D1128;
+  --bg-secondary: #15193B;
+  --card-bg: rgba(21, 25, 59, 0.6);
+  --text-primary: #FFFFFF;
+  --text-secondary: rgba(255, 255, 255, 0.8);
+  --text-muted: rgba(255, 255, 255, 0.6);
+  --accent-primary: #BF40BF;
+  --accent-secondary: #00F2EA;
+  --border-color: rgba(191, 64, 191, 0.3);
+  background: linear-gradient(135deg, #0D1128 0%, #15193B 100%);
+}
+
+/* Light Theme (Colorful Sunset) */
+body[data-theme="light"] {
+  --bg-primary: #FFF5E6;
+  --bg-secondary: #FFE4CC;
+  --card-bg: rgba(255, 255, 255, 0.9);
+  --text-primary: #1A1A2E;
+  --text-secondary: rgba(26, 26, 46, 0.9);
+  --text-muted: rgba(26, 26, 46, 0.7);
+  --accent-primary: #FF6B35;
+  --accent-secondary: #F7931E;
+  --border-color: rgba(255, 107, 53, 0.3);
+  background: linear-gradient(135deg, #FF6B35 0%, #F7931E 50%, #FBB03B 100%);
+}
+
+/* Apply theme variables to components */
+body[data-theme="light"] .glass-card {
+  background: var(--card-bg);
+  border-color: var(--border-color);
+  box-shadow: 0 8px 32px rgba(255, 107, 53, 0.2);
+}
+
+body[data-theme="light"] .glass-card:hover {
+  border-color: var(--accent-primary);
+  box-shadow: 0 12px 40px rgba(255, 107, 53, 0.3);
+}
+
+body[data-theme="light"] #starfield-canvas {
+  opacity: 0.3;
+}

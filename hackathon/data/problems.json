@@ -1,0 +1,91 @@
+[
+  {
+    "id": "prob_001",
+    "title": "Mental Health Analyzer",
+    "description": "Create a machine learning model that analyzes text messages or voice notes to detect signs of stress, anxiety, or depression among college students.",
+    "category": "AI/ML",
+    "difficulty": "Medium",
+    "tech_stack": [
+      "Python",
+      "NLP",
+      "Machine Learning",
+      "API"
+    ]
+  },
+  {
+    "id": "prob_002",
+    "title": "EduGame: Learn While You Play",
+    "description": "Build a mini browser game (quiz/puzzle) that teaches AI/ML basics interactively.",
+    "category": "Gaming",
+    "difficulty": "Easy",
+    "tech_stack": [
+      "JavaScript",
+      "HTML5",
+      "CSS3",
+      "Game Development"
+    ]
+  },
+  {
+    "id": "prob_003",
+    "title": "EcoTrack: AI for Daily Sustainability",
+    "description": "People want to track their carbon footprint but don't know how. Create a tool that scans a product or activity (like commuting, using plastic), and estimates its environmental impact using AI.",
+    "category": "AI/ML",
+    "difficulty": "Hard",
+    "tech_stack": [
+      "Computer Vision",
+      "API Integration",
+      "Mobile Development"
+    ]
+  },
+  {
+    "id": "prob_004",
+    "title": "AI-Powered Career Guide",
+    "description": "Build a recommender system that suggests career paths based on user interests, academic scores, and uploaded resumes.",
+    "category": "AI/ML",
+    "difficulty": "Medium",
+    "tech_stack": [
+      "NLP",
+      "Recommendation Systems",
+      "PDF Processing"
+    ]
+  },
+  {
+    "id": "prob_005",
+    "title": "Smart Campus Assistant",
+    "description": "Create an AI-powered chatbot that helps students navigate campus life, from finding classrooms to getting dining hall menus and event information.",
+    "category": "AI/ML",
+    "difficulty": "Easy",
+    "tech_stack": [
+      "Python",
+      "NLP",
+      "Chatbot Framework",
+      "API Integration"
+    ]
+  },
+  {
+    "id": "prob_006",
+    "title": "Blockchain Voting System",
+    "description": "Build a secure, transparent voting system using blockchain technology for student elections and organizational decisions.",
+    "category": "Web3/Blockchain",
+    "difficulty": "Hard",
+    "tech_stack": [
+      "Solidity",
+      "Web3.js",
+      "React",
+      "Ethereum"
+    ]
+  },
+  {
+    "id": "prob_007",
+    "title": "AR Study Companion",
+    "description": "Develop an augmented reality application that helps students visualize complex concepts in subjects like chemistry, physics, or mathematics.",
+    "category": "Gaming",
+    "difficulty": "Medium",
+    "tech_stack": [
+      "Unity",
+      "ARCore",
+      "C#",
+      "3D Modeling"
+    ]
+  }
+]

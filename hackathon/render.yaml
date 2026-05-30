@@ -1,0 +1,58 @@
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+# HackaVerse Backend — Render Deployment Configuration (Hardened)
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+#
+# SECURITY NOTES:
+#   - API_KEY, JWT_SECRET, MONGODB_URI must be set as Render Secrets (not plaintext)
+#   - ALLOWED_ORIGINS is locked to known domains (never *)
+#   - Unused placeholder keys have been removed
+#
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+services:
+  - type: web
+    name: hackathon-backend
+    env: python
+    buildCommand: pip install -r requirements.txt
+    startCommand: uvicorn src.main:app --host 0.0.0.0 --port $PORT
+    healthCheckPath: /system/ready
+    envVars:
+      - key: ENV
+        value: "production"
+      - key: PORT
+        value: "8000"
+      - key: BHIV_CORE_URL
+        value: "https://placeholder-core-url.com"
+      - key: BHIV_BUCKET_DIR
+        value: "./data/bucket"
+      - key: BUCKET_DB_NAME
+        value: "blackholeinifverse60_db_user"
+      # SECURITY: CORS locked to known frontend + TANTRA domains only
+      - key: ALLOWED_ORIGINS
+        value: "https://hackaverse-mu.vercel.app,https://hackaverse.vercel.app,https://hackaverse.blackholeinfiverse.com"
+      # SECURITY: These MUST be set as Render Secrets — not committed to repo
+      - key: API_KEY
+        sync: false  # Must be set manually in Render dashboard
+      - key: JWT_SECRET
+        sync: false  # Must be set manually in Render dashboard
+      - key: MONGODB_URI
+        sync: false  # Must be set manually in Render dashboard
+      - key: GROQ_API_KEY
+        sync: false  # Must be set manually in Render dashboard
+
+  - type: pserv
+    name: mongodb
+    env: docker
+    repo: mongo
+    tag: latest
+    diskSizeGB: 10
+    instanceSize: free
+
+cron:
+  - name: reminder-job
+    schedule: "0 9 * * *" # every day at 09:00 UTC
+    url: "https://YOUR_APP_ON_RENDER.onrender.com/api/v1/flows/reminder"
+    method: POST
+    body: '{"target":"teams"}'
+    headers:
+      Content-Type: application/json

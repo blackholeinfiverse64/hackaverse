@@ -1,0 +1,38 @@
+{
+  "contract_type": "replay_event",
+  "version": "1.0",
+  "description": "Replay events are re-processable payloads that produce identical outcomes when replayed. Used for audit, testing, and ecosystem synchronization.",
+  "schema": {
+    "replay_id": "rpl_unique_001",
+    "original_trace_id": "hv-1a2b3c4d5e6f7890",
+    "original_timestamp": "2026-05-25T10:30:00Z",
+    "replay_timestamp": "2026-05-26T08:00:00Z",
+    "event_type": "submission_scored",
+    "idempotency_key": "req_unique_001",
+    "input": {
+      "submission_text": "Our project implements a decentralized AI judge...",
+      "team_id": "team_abc123",
+      "tenant_id": "default",
+      "event_id": "default_event"
+    },
+    "expected_output": {
+      "total_score": 85.5,
+      "confidence": 0.92,
+      "version": 1
+    },
+    "replay_result": "MATCH",
+    "provenance": {
+      "source": "hackaverse-replay-engine",
+      "original_source": "hackaverse-judge",
+      "model_version": "groq/llama-3"
+    }
+  },
+  "replay_safe": true,
+  "deterministic_fields": ["replay_id", "original_trace_id", "idempotency_key"],
+  "replay_guarantees": {
+    "idempotent": true,
+    "deterministic_scoring": true,
+    "nonce_replay_protection": true,
+    "request_id_deduplication": true
+  }
+}

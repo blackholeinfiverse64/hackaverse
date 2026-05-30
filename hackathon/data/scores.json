@@ -1,0 +1,197 @@
+[
+  {
+    "id": "5f4e15c9",
+    "team_name": "AI Innovators",
+    "judge_name": "Dr. Rajesh Kumar",
+    "scores": {
+      "usefulness": 9,
+      "creativity": 8,
+      "teamwork": 9,
+      "tech_stack": 8,
+      "clarity": 9
+    },
+    "total_score": 43,
+    "comments": "Excellent implementation with real-world impact. Great use of computer vision and user experience design.",
+    "submitted_at": "2025-07-31T13:55:15.777157"
+  },
+  {
+    "id": "d50f8c2c",
+    "team_name": "AI Innovators",
+    "judge_name": "Prof. Anita Sharma",
+    "scores": {
+      "usefulness": 8,
+      "creativity": 9,
+      "teamwork": 8,
+      "tech_stack": 9,
+      "clarity": 8
+    },
+    "total_score": 42,
+    "comments": "Innovative approach to environmental tracking. Strong technical implementation and clear presentation.",
+    "submitted_at": "2025-07-31T13:55:15.785761"
+  },
+  {
+    "id": "e59d4de7",
+    "team_name": "Code Crusaders",
+    "judge_name": "Dr. Rajesh Kumar",
+    "scores": {
+      "usefulness": 9,
+      "creativity": 7,
+      "teamwork": 8,
+      "tech_stack": 7,
+      "clarity": 8
+    },
+    "total_score": 39,
+    "comments": "Addresses important mental health issues. Good NLP implementation, could benefit from more advanced ML models.",
+    "submitted_at": "2025-07-31T13:55:15.792374"
+  },
+  {
+    "id": "9862fe8a",
+    "team_name": "Code Crusaders",
+    "judge_name": "Prof. Anita Sharma",
+    "scores": {
+      "usefulness": 8,
+      "creativity": 8,
+      "teamwork": 9,
+      "tech_stack": 8,
+      "clarity": 9
+    },
+    "total_score": 42,
+    "comments": "Well-executed project with clear social impact. Excellent team collaboration and presentation skills.",
+    "submitted_at": "2025-07-31T13:55:15.801374"
+  },
+  {
+    "id": "321b3baf",
+    "team_name": "Tech Titans",
+    "judge_name": "Dr. Rajesh Kumar",
+    "scores": {
+      "usefulness": 7,
+      "creativity": 9,
+      "teamwork": 8,
+      "tech_stack": 7,
+      "clarity": 8
+    },
+    "total_score": 39,
+    "comments": "Creative approach to education. Engaging game mechanics, could expand content depth.",
+    "submitted_at": "2025-07-31T13:55:15.809237"
+  },
+  {
+    "id": "1c5fb874",
+    "team_name": "Quantum Coders",
+    "judge_name": "Prof. Anita Sharma",
+    "scores": {
+      "usefulness": 8,
+      "creativity": 7,
+      "teamwork": 7,
+      "tech_stack": 8,
+      "clarity": 7
+    },
+    "total_score": 37,
+    "comments": "Solid career guidance system. Good data analysis, presentation could be more polished.",
+    "submitted_at": "2025-07-31T13:55:15.818667"
+  },
+  {
+    "id": "6053fc30",
+    "team_name": "AI Innovators",
+    "judge_name": "Dr. Rajesh Kumar",
+    "scores": {
+      "usefulness": 9,
+      "creativity": 8,
+      "teamwork": 9,
+      "tech_stack": 8,
+      "clarity": 9
+    },
+    "total_score": 43,
+    "comments": "Excellent implementation with real-world impact. Great use of computer vision and user experience design.",
+    "submitted_at": "2025-07-31T13:59:38.119115"
+  },
+  {
+    "id": "d7a16247",
+    "team_name": "AI Innovators",
+    "judge_name": "Prof. Anita Sharma",
+    "scores": {
+      "usefulness": 8,
+      "creativity": 9,
+      "teamwork": 8,
+      "tech_stack": 9,
+      "clarity": 8
+    },
+    "total_score": 42,
+    "comments": "Innovative approach to environmental tracking. Strong technical implementation and clear presentation.",
+    "submitted_at": "2025-07-31T13:59:38.128302"
+  },
+  {
+    "id": "f24af60f",
+    "team_name": "Code Crusaders",
+    "judge_name": "Dr. Rajesh Kumar",
+    "scores": {
+      "usefulness": 9,
+      "creativity": 7,
+      "teamwork": 8,
+      "tech_stack": 7,
+      "clarity": 8
+    },
+    "total_score": 39,
+    "comments": "Addresses important mental health issues. Good NLP implementation, could benefit from more advanced ML models.",
+    "submitted_at": "2025-07-31T13:59:38.136910"
+  },
+  {
+    "id": "d76e67db",
+    "team_name": "Code Crusaders",
+    "judge_name": "Prof. Anita Sharma",
+    "scores": {
+      "usefulness": 8,
+      "creativity": 8,
+      "teamwork": 9,
+      "tech_stack": 8,
+      "clarity": 9
+    },
+    "total_score": 42,
+    "comments": "Well-executed project with clear social impact. Excellent team collaboration and presentation skills.",
+    "submitted_at": "2025-07-31T13:59:38.144913"
+  },
+  {
+    "id": "3f777452",
+    "team_name": "Tech Titans",
+    "judge_name": "Dr. Rajesh Kumar",
+    "scores": {
+      "usefulness": 7,
+      "creativity": 9,
+      "teamwork": 8,
+      "tech_stack": 7,
+      "clarity": 8
+    },
+    "total_score": 39,
+    "comments": "Creative approach to education. Engaging game mechanics, could expand content depth.",
+    "submitted_at": "2025-07-31T13:59:38.152915"
+  },
+  {
+    "id": "be12aade",
+    "team_name": "Quantum Coders",
+    "judge_name": "Prof. Anita Sharma",
+    "scores": {
+      "usefulness": 8,
+      "creativity": 7,
+      "teamwork": 7,
+      "tech_stack": 8,
+      "clarity": 7
+    },
+    "total_score": 37,
+    "comments": "Solid career guidance system. Good data analysis, presentation could be more polished.",
+    "submitted_at": "2025-07-31T13:59:38.161917"
+  },
+  {
+    "id": "6ef56116",
+    "team_name": "GreenThumbAI",
+    "judge_name": "Judge",
+    "scores": {
+      "usefulness": 5,
+      "creativity": 5,
+      "teamwork": 5,
+      "tech_stack": 5,
+      "clarity": 5
+    },
+    "total_score": 25,
+    "comments": "",
+    "submitted_at": "2025-09-09T13:16:03.523870"
+  }
+]

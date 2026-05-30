@@ -1,0 +1,17 @@
+{
+    "{\"submission_rate\": 83.3, \"team_count\": 6, \"user_text\": \"Submitted MVP, low on creativity'\\n\"}": {
+        "SUG-1": -0.1,
+        "SUG-2": 0.0,
+        "SUG-3": 0.0
+    },
+    "{\"submission_rate\": 83.3, \"team_count\": 6, \"user_text\": \"Submitted MVP, low on creativity\"}": {
+        "SUG-3": 0.0,
+        "SUG-1": -0.1,
+        "SUG-2": 0.0
+    },
+    "{\"submission_rate\": 83.3, \"team_count\": 6, \"user_text\": \"We've built a Streamlit-based hackathon platform with AI agents (MentorBot, Adaptive Feedback Agent) using the Groq API. Implemented RL for suggestion adaptation, but tests are failing due to import errors in test_rl.py. Need help stabilizing the RL engine and preparing a demo for submission.\"}": {
+        "SUG-3": 0.0,
+        "SUG-1": -0.1,
+        "SUG-2": 0.0
+    }
+}

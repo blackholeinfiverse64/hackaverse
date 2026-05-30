@@ -1,0 +1,20 @@
+# Python
+.env
+__pycache__/
+*.pyc
+.pytest_cache/
+*.log
+.coverage
+coverage.xml
+htmlcov/
+
+# Security
+secrets.toml
+
+# Data / Bucket
+data/bucket/
+data/failed_core_sends.log
+logs.json
+
+# Archives
+*.zip

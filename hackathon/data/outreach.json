@@ -1,0 +1,68 @@
+[
+  {
+    "id": "0678b1f4",
+    "college_name": "Indian Institute of Technology Delhi",
+    "contact_person": "Dr. Rajesh Kumar",
+    "contact_email": "rajesh.kumar@cse.iitd.ac.in",
+    "contact_phone": "+91-11-2659-1286",
+    "outreach_method": "Email",
+    "status": "responded",
+    "contacted_at": "2025-07-31T13:55:15.819667",
+    "responses": []
+  },
+  {
+    "id": "14e153f2",
+    "college_name": "Delhi Technological University",
+    "contact_person": "Prof. Anita Sharma",
+    "contact_email": "anita.sharma@dtu.ac.in",
+    "contact_phone": "+91-11-2787-2983",
+    "outreach_method": "Email + LinkedIn",
+    "status": "interested",
+    "contacted_at": "2025-07-31T13:55:15.825929",
+    "responses": []
+  },
+  {
+    "id": "f5b08c0f",
+    "college_name": "Netaji Subhas University of Technology",
+    "contact_person": "Dr. Vikram Singh",
+    "contact_email": "vikram.singh@nsut.ac.in",
+    "contact_phone": "+91-11-2590-1000",
+    "outreach_method": "WhatsApp",
+    "status": "registered",
+    "contacted_at": "2025-07-31T13:55:15.834845",
+    "responses": []
+  },
+  {
+    "id": "c3d72957",
+    "college_name": "Indian Institute of Technology Delhi",
+    "contact_person": "Dr. Rajesh Kumar",
+    "contact_email": "rajesh.kumar@cse.iitd.ac.in",
+    "contact_phone": "+91-11-2659-1286",
+    "outreach_method": "Email",
+    "status": "responded",
+    "contacted_at": "2025-07-31T13:59:38.161917",
+    "responses": []
+  },
+  {
+    "id": "3d69a22a",
+    "college_name": "Delhi Technological University",
+    "contact_person": "Prof. Anita Sharma",
+    "contact_email": "anita.sharma@dtu.ac.in",
+    "contact_phone": "+91-11-2787-2983",
+    "outreach_method": "Email + LinkedIn",
+    "status": "interested",
+    "contacted_at": "2025-07-31T13:59:38.170177",
+    "responses": []
+  },
+  {
+    "id": "e4152c5c",
+    "college_name": "Netaji Subhas University of Technology",
+    "contact_person": "Dr. Vikram Singh",
+    "contact_email": "vikram.singh@nsut.ac.in",
+    "contact_phone": "+91-11-2590-1000",
+    "outreach_method": "WhatsApp",
+    "status": "registered",
+    "contacted_at": "2025-07-31T13:59:38.177259",
+    "responses": []
+  }
+]

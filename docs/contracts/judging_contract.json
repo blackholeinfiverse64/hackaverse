@@ -1,0 +1,31 @@
+{
+  "contract_type": "judging_result",
+  "version": "1.0",
+  "schema": {
+    "trace_id": "hv-f1e2d3c4b5a67890",
+    "submission_hash": "sub_001",
+    "team_id": "team_abc123",
+    "total_score": 85.5,
+    "scores": {
+      "clarity": 8.5,
+      "innovation": 9.0,
+      "quality": 8.0,
+      "feasibility": 8.5,
+      "presentation": 8.5
+    },
+    "confidence": 0.92,
+    "judge_type": "ai",
+    "feedback": "Strong technical implementation with clear documentation. Innovation score reflects novel approach to decentralized judging.",
+    "version": 1,
+    "provenance_hash": "sha256:abc123def456...",
+    "timestamp": "2026-05-25T10:31:00Z"
+  },
+  "replay_safe": true,
+  "deterministic_fields": ["submission_hash", "team_id", "total_score", "version", "trace_id"],
+  "provenance": {
+    "source": "hackaverse-judge",
+    "api_version": "v1",
+    "model": "groq/llama-3",
+    "endpoint": "/api/v1/judge/score"
+  }
+}

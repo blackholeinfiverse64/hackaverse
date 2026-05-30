@@ -1,0 +1,197 @@
+[
+  {
+    "id": "9ce948eb",
+    "team_name": "AI Innovators",
+    "members": [
+      "John Doe",
+      "Jane Smith",
+      "Alex Chen"
+    ],
+    "email": "ai.innovators@example.com",
+    "college": "IIT Delhi",
+    "contact_number": "+91-9876543210",
+    "registered_at": "2025-07-31T13:55:15.709406",
+    "status": "registered"
+  },
+  {
+    "id": "73766be1",
+    "team_name": "Code Crusaders",
+    "members": [
+      "Sarah Wilson",
+      "Mike Johnson"
+    ],
+    "email": "codecrusaders@example.com",
+    "college": "DTU",
+    "contact_number": "+91-9876543211",
+    "registered_at": "2025-07-31T13:55:15.715754",
+    "status": "registered"
+  },
+  {
+    "id": "5d7ab920",
+    "team_name": "Tech Titans",
+    "members": [
+      "Priya Sharma",
+      "Rahul Kumar",
+      "Anita Patel",
+      "David Lee"
+    ],
+    "email": "techtitans@example.com",
+    "college": "NSUT",
+    "contact_number": "+91-9876543212",
+    "registered_at": "2025-07-31T13:55:15.721550",
+    "status": "registered"
+  },
+  {
+    "id": "cc97f2e5",
+    "team_name": "Quantum Coders",
+    "members": [
+      "Lisa Zhang",
+      "Carlos Rodriguez",
+      "Aisha Khan"
+    ],
+    "email": "quantumcoders@example.com",
+    "college": "IIT Delhi",
+    "contact_number": "+91-9876543213",
+    "registered_at": "2025-07-31T13:55:15.730392",
+    "status": "registered"
+  },
+  {
+    "id": "9aa905ef",
+    "team_name": "Digital Dreamers",
+    "members": [
+      "Ravi Gupta",
+      "Sneha Reddy"
+    ],
+    "email": "digitaldreamers@example.com",
+    "college": "DTU",
+    "contact_number": "+91-9876543214",
+    "registered_at": "2025-07-31T13:55:15.738604",
+    "status": "registered"
+  },
+  {
+    "id": "8bf3e05b",
+    "team_name": "Hack Universse",
+    "members": [
+      "Rahul",
+      "Rohit",
+      "Rakesh"
+    ],
+    "email": "abc@gmail.com",
+    "college": "Mumbai University",
+    "contact_number": "8889996655",
+    "registered_at": "2025-07-31T14:09:12.156930",
+    "status": "registered"
+  },
+  {
+    "id": "f7c3e4df",
+    "team_name": "GreenThumbAI",
+    "members": [
+      "Sejal Dongre",
+      "Prajakta Gaikwad",
+      "Apeksha Pansare"
+    ],
+    "email": "greenthumbai@gmail.com",
+    "college": "mumbai ",
+    "contact_number": "8010360195",
+    "registered_at": "2025-09-09T13:09:13.183891",
+    "status": "registered"
+  },
+  {
+    "id": "203ac792",
+    "team_name": "Team_1",
+    "members": [
+      "Member_1",
+      "Member_2",
+      "Member_3"
+    ],
+    "email": "team_1@example.com",
+    "college": "College_1",
+    "contact_number": "+91-9876543201",
+    "registered_at": "2025-10-29T01:01:28.741179",
+    "status": "registered"
+  },
+  {
+    "id": "9f74d574",
+    "team_name": "Team_2",
+    "members": [
+      "Member_1",
+      "Member_2",
+      "Member_3"
+    ],
+    "email": "team_2@example.com",
+    "college": "College_2",
+    "contact_number": "+91-9876543202",
+    "registered_at": "2025-10-29T01:01:28.906760",
+    "status": "registered"
+  },
+  {
+    "id": "a9c0b65d",
+    "team_name": "Team_3",
+    "members": [
+      "Member_1",
+      "Member_2",
+      "Member_3"
+    ],
+    "email": "team_3@example.com",
+    "college": "College_3",
+    "contact_number": "+91-9876543203",
+    "registered_at": "2025-10-29T01:01:29.194777",
+    "status": "registered"
+  },
+  {
+    "id": "288bc77a",
+    "team_name": "Team_4",
+    "members": [
+      "Member_1",
+      "Member_2",
+      "Member_3"
+    ],
+    "email": "team_4@example.com",
+    "college": "College_4",
+    "contact_number": "+91-9876543204",
+    "registered_at": "2025-10-29T01:01:29.533195",
+    "status": "registered"
+  },
+  {
+    "id": "9ff93f4b",
+    "team_name": "Team_5",
+    "members": [
+      "Member_1",
+      "Member_2",
+      "Member_3"
+    ],
+    "email": "team_5@example.com",
+    "college": "College_5",
+    "contact_number": "+91-9876543205",
+    "registered_at": "2025-10-29T01:01:29.758995",
+    "status": "registered"
+  },
+  {
+    "id": "648bdcb4",
+    "team_name": "Team_6",
+    "members": [
+      "Member_1",
+      "Member_2",
+      "Member_3"
+    ],
+    "email": "team_6@example.com",
+    "college": "College_6",
+    "contact_number": "+91-9876543206",
+    "registered_at": "2025-10-29T01:01:30.376487",
+    "status": "registered"
+  },
+  {
+    "id": "f32d8314",
+    "team_name": "Team_7",
+    "members": [
+      "Member_1",
+      "Member_2",
+      "Member_3"
+    ],
+    "email": "team_7@example.com",
+    "college": "College_7",
+    "contact_number": "+91-9876543207",
+    "registered_at": "2025-10-29T01:01:31.493630",
+    "status": "registered"
+  }
+]

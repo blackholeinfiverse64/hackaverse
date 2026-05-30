@@ -1,0 +1,224 @@
+[
+  {
+    "id": "770c66c2",
+    "team_name": "AI Innovators",
+    "project_title": "EcoTrack: Smart Carbon Footprint Analyzer",
+    "description": "An AI-powered mobile application that analyzes daily activities and calculates environmental impact using computer vision and machine learning. Users can scan products, track transportation, and receive personalized sustainability recommendations.",
+    "github_link": "https://github.com/ai-innovators/ecotrack",
+    "demo_link": "https://ecotrack-demo.herokuapp.com",
+    "tech_stack": [
+      "Python",
+      "TensorFlow",
+      "React Native",
+      "Firebase",
+      "Computer Vision"
+    ],
+    "problem_id": "prob_003",
+    "submitted_at": "2025-07-31T13:55:15.746645",
+    "status": "submitted",
+    "updated_at": "2025-07-31T13:59:38.088476"
+  },
+  {
+    "id": "906ea45a",
+    "team_name": "Code Crusaders",
+    "project_title": "MindfulAI: Mental Health Companion",
+    "description": "A comprehensive mental health platform that uses NLP to analyze text and voice inputs for stress detection, provides personalized coping strategies, and connects users with appropriate resources and support networks.",
+    "github_link": "https://github.com/codecrusaders/mindfulai",
+    "demo_link": "https://mindfulai-demo.netlify.app",
+    "tech_stack": [
+      "Python",
+      "NLTK",
+      "React",
+      "Node.js",
+      "MongoDB"
+    ],
+    "problem_id": "prob_001",
+    "submitted_at": "2025-07-31T13:55:15.756194",
+    "status": "submitted",
+    "updated_at": "2025-07-31T13:59:38.099132"
+  },
+  {
+    "id": "3685aa47",
+    "team_name": "Tech Titans",
+    "project_title": "GameLearn: Interactive AI Education",
+    "description": "An engaging browser-based game that teaches AI and machine learning concepts through interactive puzzles, coding challenges, and visual demonstrations. Perfect for students new to AI.",
+    "github_link": "https://github.com/techtitans/gamelearn",
+    "demo_link": "https://gamelearn.vercel.app",
+    "tech_stack": [
+      "JavaScript",
+      "Phaser.js",
+      "Node.js",
+      "Express",
+      "PostgreSQL"
+    ],
+    "problem_id": "prob_002",
+    "submitted_at": "2025-07-31T13:55:15.766762",
+    "status": "submitted",
+    "updated_at": "2025-07-31T13:59:38.108686"
+  },
+  {
+    "id": "4c65e60e",
+    "team_name": "Quantum Coders",
+    "project_title": "CareerCompass: AI-Powered Career Guide",
+    "description": "An intelligent career recommendation system that analyzes resumes, academic performance, interests, and market trends to suggest optimal career paths and skill development plans for students.",
+    "github_link": "https://github.com/quantumcoders/careercompass",
+    "demo_link": "https://careercompass-ai.herokuapp.com",
+    "tech_stack": [
+      "Python",
+      "scikit-learn",
+      "Flask",
+      "React",
+      "PDF Processing"
+    ],
+    "problem_id": "prob_004",
+    "submitted_at": "2025-07-31T13:55:15.776155",
+    "status": "submitted",
+    "updated_at": "2025-07-31T13:59:38.119115"
+  },
+  {
+    "id": "f21c4aae",
+    "team_name": "Hack Universse",
+    "project_title": "Universe",
+    "description": "This is submission",
+    "github_link": "https://github.com/sharmavijay45/Infiverse-BHL",
+    "demo_link": "",
+    "tech_stack": [
+      "React",
+      "Node.js",
+      "Python",
+      "JavaScript",
+      "Firebase",
+      "MongoDB"
+    ],
+    "problem_id": "prob_003",
+    "submitted_at": "2025-07-31T14:10:41.799998",
+    "status": "submitted"
+  },
+  {
+    "id": "4f675a2c",
+    "team_name": "GreenThumbAI",
+    "project_title": "LeafLens AI Hackathon Demo",
+    "description": "LeafLens is an AI-powered plant identification system that allows users to upload an image, type a plant name, or scan a leaf to identify the plant. It provides detailed information about the plant, including shape, color, texture, and veins. The system also includes AI agents:\n\nMentorBot: Answers user questions about the app.\n\nReminderBot: Sends reminders for project submissions.\n\nJudgingBot: Automatically scores submitted projects.",
+    "github_link": "https://github.com/Sejal060/hackathon.git",
+    "demo_link": "https://hackathonfinal-tvl5dbevrqugtnvcpfgrrc.streamlit.app/",
+    "tech_stack": [
+      "Python",
+      "Node.js"
+    ],
+    "problem_id": "prob_004",
+    "submitted_at": "2025-09-09T13:11:50.637036",
+    "status": "submitted"
+  },
+  {
+    "id": "ea96992e",
+    "team_name": "Team_1",
+    "project_title": "AI Project 76",
+    "description": "A demonstration project for team Team_1",
+    "github_link": "https://github.com/team_1/project",
+    "demo_link": "",
+    "tech_stack": [
+      "Python",
+      "FastAPI",
+      "BHIV"
+    ],
+    "problem_id": "",
+    "submitted_at": "2025-10-29T01:01:32.442195",
+    "status": "submitted"
+  },
+  {
+    "id": "46550648",
+    "team_name": "Team_2",
+    "project_title": "AI Project 30",
+    "description": "A demonstration project for team Team_2",
+    "github_link": "https://github.com/team_2/project",
+    "demo_link": "",
+    "tech_stack": [
+      "Python",
+      "FastAPI",
+      "BHIV"
+    ],
+    "problem_id": "",
+    "submitted_at": "2025-10-29T01:01:33.624205",
+    "status": "submitted"
+  },
+  {
+    "id": "09870e32",
+    "team_name": "Team_3",
+    "project_title": "AI Project 17",
+    "description": "A demonstration project for team Team_3",
+    "github_link": "https://github.com/team_3/project",
+    "demo_link": "",
+    "tech_stack": [
+      "Python",
+      "FastAPI",
+      "BHIV"
+    ],
+    "problem_id": "",
+    "submitted_at": "2025-10-29T01:01:34.657674",
+    "status": "submitted"
+  },
+  {
+    "id": "7f100684",
+    "team_name": "Team_4",
+    "project_title": "AI Project 87",
+    "description": "A demonstration project for team Team_4",
+    "github_link": "https://github.com/team_4/project",
+    "demo_link": "",
+    "tech_stack": [
+      "Python",
+      "FastAPI",
+      "BHIV"
+    ],
+    "problem_id": "",
+    "submitted_at": "2025-10-29T01:01:35.366644",
+    "status": "submitted"
+  },
+  {
+    "id": "c30675b4",
+    "team_name": "Team_5",
+    "project_title": "AI Project 46",
+    "description": "A demonstration project for team Team_5",
+    "github_link": "https://github.com/team_5/project",
+    "demo_link": "",
+    "tech_stack": [
+      "Python",
+      "FastAPI",
+      "BHIV"
+    ],
+    "problem_id": "",
+    "submitted_at": "2025-10-29T01:01:36.087263",
+    "status": "submitted"
+  },
+  {
+    "id": "14d550fd",
+    "team_name": "Team_6",
+    "project_title": "AI Project 53",
+    "description": "A demonstration project for team Team_6",
+    "github_link": "https://github.com/team_6/project",
+    "demo_link": "",
+    "tech_stack": [
+      "Python",
+      "FastAPI",
+      "BHIV"
+    ],
+    "problem_id": "",
+    "submitted_at": "2025-10-29T01:01:36.753409",
+    "status": "submitted"
+  },
+  {
+    "id": "623a86c7",
+    "team_name": "Team_7",
+    "project_title": "AI Project 89",
+    "description": "A demonstration project for team Team_7",
+    "github_link": "https://github.com/team_7/project",
+    "demo_link": "",
+    "tech_stack": [
+      "Python",
+      "FastAPI",
+      "BHIV"
+    ],
+    "problem_id": "",
+    "submitted_at": "2025-10-29T01:01:37.379971",
+    "status": "submitted"
+  }
+]

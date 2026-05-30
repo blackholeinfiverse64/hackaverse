@@ -1,0 +1,4 @@
+suggestion_id,text,weight
+SUG-1,"Try a 25-minute focused study sprint, then 5-minute break.",-0.1
+SUG-2,Plan tomorrow’s top 3 tasks tonight.,0.1
+SUG-3,"If stuck, switch to an easier sub-task for 10 minutes.",0.0

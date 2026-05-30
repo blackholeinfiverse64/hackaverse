@@ -1,0 +1,40 @@
+{
+  "contract_type": "event_payload",
+  "version": "1.0",
+  "schema": {
+    "trace_id": "hv-1a2b3c4d5e6f7890",
+    "event_type": "submission_created",
+    "event_id": "evt_unique_001",
+    "source": "hackaverse-api",
+    "timestamp": "2026-05-25T10:30:00Z",
+    "actor": {
+      "user_id": "usr_001",
+      "role": "participant"
+    },
+    "payload": {
+      "submission_id": "sub_001",
+      "team_id": "team_abc123",
+      "hackathon_id": "hackathon_main_2026",
+      "project_title": "AI Judge v2"
+    },
+    "metadata": {
+      "api_version": "v1",
+      "route": "/api/v1/submissions",
+      "method": "POST",
+      "status": 201
+    }
+  },
+  "replay_safe": true,
+  "deterministic_fields": ["event_id", "trace_id", "event_type", "timestamp"],
+  "supported_event_types": [
+    "submission_created",
+    "submission_scored",
+    "team_created",
+    "team_member_joined",
+    "hackathon_created",
+    "user_registered",
+    "user_logged_in",
+    "judge_invitation_sent",
+    "notification_created"
+  ]
+}
