@@ -7,6 +7,7 @@ from ..auth import get_api_key, get_current_user_id
 from ..database import get_db
 from ..db_models import COLLECTIONS
 from ..schemas.response import APIResponse
+from ..utils.judge_helpers import require_judge
 
 logger = logging.getLogger(__name__)
 
@@ -24,10 +25,7 @@ class ReviewSubmit(BaseModel):
 async def get_all_submissions_for_judge(status: Optional[str] = None, hackathon_id: Optional[str] = None, limit: int = 100, user_id: str = Depends(get_current_user_id)):
     """Get all submissions for judge review (no team filtering)"""
     db = get_db()
-    
-    judge_doc = db[COLLECTIONS["judges"]].find_one({"user_id": user_id})
-    if not judge_doc:
-        raise HTTPException(status_code=403, detail="User is not a judge")
+    require_judge(db, user_id)
     
     query = {}
     
@@ -63,10 +61,7 @@ async def get_all_submissions_for_judge(status: Optional[str] = None, hackathon_
 async def get_pending_submissions(hackathon_id: Optional[str] = None, limit: int = 100, user_id: str = Depends(get_current_user_id)):
     """Get submissions pending judge review (judge must be assigned)"""
     db = get_db()
-    
-    judge_doc = db[COLLECTIONS["judges"]].find_one({"user_id": user_id})
-    if not judge_doc:
-        raise HTTPException(status_code=403, detail="User is not a judge")
+    require_judge(db, user_id)
     
     # Query for submissions with status "submitted" or no status field
     query = {
@@ -110,10 +105,7 @@ async def get_pending_submissions(hackathon_id: Optional[str] = None, limit: int
 async def get_all_submissions(hackathon_id: Optional[str] = None, limit: int = 100, user_id: str = Depends(get_current_user_id)):
     """Get all submissions for judge review (no status filter)"""
     db = get_db()
-    
-    judge_doc = db[COLLECTIONS["judges"]].find_one({"user_id": user_id})
-    if not judge_doc:
-        raise HTTPException(status_code=403, detail="User is not a judge")
+    require_judge(db, user_id)
     
     query = {}
     
@@ -146,10 +138,7 @@ async def get_all_submissions(hackathon_id: Optional[str] = None, limit: int = 1
 async def submit_review(review: ReviewSubmit, user_id: str = Depends(get_current_user_id)):
     """Submit manual judge review"""
     db = get_db()
-    
-    judge_doc = db[COLLECTIONS["judges"]].find_one({"user_id": user_id})
-    if not judge_doc:
-        raise HTTPException(status_code=403, detail="User is not a judge")
+    require_judge(db, user_id)
 
     submission = db[COLLECTIONS.get("submissions", "submissions")].find_one({"submission_id": review.submission_id})
     if not submission:
@@ -186,10 +175,7 @@ async def submit_review(review: ReviewSubmit, user_id: str = Depends(get_current
 async def get_judge_assignments(user_id: str = Depends(get_current_user_id)):
     """Get submissions assigned to current judge"""
     db = get_db()
-    
-    judge_doc = db[COLLECTIONS["judges"]].find_one({"user_id": user_id})
-    if not judge_doc:
-        raise HTTPException(status_code=403, detail="User is not a judge")
+    require_judge(db, user_id)
     
     assignments = list(db[COLLECTIONS["judge_assignments"]].find({"judge_id": user_id}))
     

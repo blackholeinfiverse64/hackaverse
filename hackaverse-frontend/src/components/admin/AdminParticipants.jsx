@@ -1,11 +1,12 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '../../contexts/AuthContext';
 import { useSyncContext } from '../../contexts/SyncContext';
+import { apiService, extractApiData } from '../../services/api';
 import InviteParticipantModal from './InviteParticipantModal';
 
 const AdminParticipants = () => {
   const { logout } = useAuth();
-  const { teams, hackathons, participants: syncParticipants } = useSyncContext();
+  const { teams, hackathons } = useSyncContext();
   const [filters, setFilters] = useState({
     search: '',
     role: 'all',
@@ -19,32 +20,48 @@ const AdminParticipants = () => {
   const [selectedTrack, setSelectedTrack] = useState('all');
 
   useEffect(() => {
-    const participantsData = [];
-    
-    syncParticipants.forEach(participant => {
-      const userTeam = teams.find(t => t.members?.some(m => {
-        const memberId = typeof m === 'object' ? m.user_id : m;
-        return memberId === participant.id;
-      }));
-      
-      const hackathon = userTeam ? hackathons.find(h => h.id === userTeam.hackathon_id) : null;
-      
-      participantsData.push({
-        id: participant.id,
-        name: participant.name,
-        email: participant.email,
-        team: userTeam?.team_name || 'No Team',
-        track: hackathon?.track || 'Open Innovation',
-        projects: 1,
-        role: 'participant',
-        status: 'active',
-        joined: userTeam ? new Date(userTeam.created_at).toLocaleDateString() : 'N/A'
-      });
-    });
-    
-    setParticipants(participantsData);
-    setFilteredParticipants(participantsData);
-  }, [syncParticipants, teams, hackathons]);
+    const loadParticipants = async () => {
+      try {
+        const response = await apiService.admin.getParticipants();
+        const users = extractApiData(response) || [];
+
+        const participantsData = users.map((participant) => {
+          const userTeam = teams.find((t) =>
+            t.members?.some((m) => {
+              const memberId = typeof m === 'object' ? m.user_id : m;
+              return memberId === participant.id || memberId === participant.user_id;
+            })
+          );
+          const hackathon = userTeam
+            ? hackathons.find((h) => h.id === userTeam.hackathon_id)
+            : null;
+
+          return {
+            id: participant.id || participant.user_id,
+            name: participant.name,
+            email: participant.email,
+            team: userTeam?.team_name || 'No Team',
+            track: hackathon?.track || 'Open Innovation',
+            projects: 1,
+            role: participant.role || 'participant',
+            status: 'active',
+            joined: userTeam
+              ? new Date(userTeam.created_at).toLocaleDateString()
+              : participant.created_at
+                ? new Date(participant.created_at).toLocaleDateString()
+                : 'N/A',
+          };
+        });
+
+        setParticipants(participantsData);
+        setFilteredParticipants(participantsData);
+      } catch (error) {
+        console.error('Failed to load participants:', error);
+      }
+    };
+
+    loadParticipants();
+  }, [teams, hackathons]);
 
   useEffect(() => {
     if (selectedTrack === 'all') {

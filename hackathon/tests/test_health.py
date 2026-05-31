@@ -36,13 +36,13 @@ class TestHealthEndpoint:
         assert "status" in data["data"]
         assert "timestamp" in data["data"]
 
-    @patch("src.main.DB_AVAILABLE", True)
+    @patch("src.database.DB_AVAILABLE", True)
     def test_health_connected(self, client):
         resp = client.get("/health")
         data = resp.json()
         assert data["data"]["status"] == "ok"
 
-    @patch("src.main.DB_AVAILABLE", False)
+    @patch("src.database.DB_AVAILABLE", False)
     def test_health_degraded(self, client):
         resp = client.get("/health")
         data = resp.json()

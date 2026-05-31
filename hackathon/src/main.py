@@ -46,15 +46,35 @@ async def startup_event():
     logger.info("="*70)
     logger.info("[STARTUP] HackaVerse Backend Starting...")
     logger.info("="*70)
-    
+
+    env_mode = os.getenv("ENV", "development").lower()
+    judge_mode = os.getenv("JUDGE_MODE", "ai").lower()
+
+    try:
+        from .services.email_service import get_email_delivery_mode
+        logger.info(f"[STARTUP] Email delivery mode: {get_email_delivery_mode()}")
+    except Exception as exc:
+        logger.warning(f"[STARTUP] Email service check skipped: {exc}")
+
+    if env_mode == "production" and judge_mode == "ai":
+        from .judging.multi_agent_judge import is_groq_configured
+        if not is_groq_configured():
+            logger.error(
+                "[STARTUP] GROQ_API_KEY is required when ENV=production and JUDGE_MODE=ai"
+            )
+            raise RuntimeError(
+                "GROQ_API_KEY must be set for production AI judging. "
+                "Use JUDGE_MODE=demo only for non-production demo stacks."
+            )
+
     # Connect to database
     success = connect_to_db()
-    
+
     if success:
         logger.info("[SUCCESS] Backend Ready! Database: Connected | Docs: /docs")
     else:
         logger.warning("[WARNING] Backend Started in Degraded Mode — Database NOT Connected")
-    
+
     logger.info("="*70)
 
 @app.on_event("shutdown")
@@ -201,7 +221,7 @@ def get_csrf_token():
 # ============================================================================
 
 from .routes.auth_routes import router as auth_router
-from .routes.admin import router as admin_router
+from .routes.admin import router as admin_router, registration_router
 from .routes.hackathons import router as hackathons_router, public_router as hackathons_public_router
 from .routes.teams_crud import router as teams_crud_router
 from .routes.submissions import router as submissions_router
@@ -240,6 +260,7 @@ v1.include_router(auth_router, prefix="/auth")
 
 # Admin
 v1.include_router(admin_router)
+v1.include_router(registration_router)
 
 # Hackathons (public + authenticated)
 v1.include_router(hackathons_public_router)
@@ -259,6 +280,7 @@ v1.include_router(judge_router)
 v1.include_router(judge_review_router)
 v1.include_router(judge_invitations_router)
 v1.include_router(leaderboard_router)
+v1.include_router(missing_leaderboard_router)
 v1.include_router(judging_router)
 
 # System & Infra
@@ -278,10 +300,23 @@ v1.include_router(webhooks_router)
 # responses from other middleware.
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # Allow all origins for development
-    allow_credentials=False,  # When using *, credentials must be False
-    allow_methods=["*"],  # Allow all methods
-    allow_headers=["*"],  # Allow all headers
+    # Production hardening:
+    # - In production, ALLOWED_ORIGINS must be explicitly set (or we default to known Vercel domains above).
+    # - In development, we allow local origins and may include "*" as a fallback.
+    allow_origins=_allowed_origins,
+    allow_credentials=("*" not in _allowed_origins),
+    allow_methods=["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
+    allow_headers=[
+        "Authorization",
+        "Content-Type",
+        "X-API-Key",
+        "X-Nonce",
+        "X-Timestamp",
+        "X-Signature",
+        "X-CSRF-Token",
+        "X-Trace-Parent",
+    ],
+    expose_headers=["X-Request-Id"],
 )
 
 # Mount versioned router
@@ -295,6 +330,7 @@ app.include_router(v1)
 # --------------------------------------------------------------------------
 app.include_router(auth_router, prefix="/auth")
 app.include_router(admin_router)
+app.include_router(registration_router)
 app.include_router(hackathons_public_router)
 app.include_router(hackathons_router)
 app.include_router(teams_crud_router)
@@ -312,6 +348,7 @@ app.include_router(user_profile_router)
 app.include_router(submissions_crud_router)
 app.include_router(reward_router)
 app.include_router(judging_router)
+app.include_router(missing_leaderboard_router)
 app.include_router(file_uploads_router)
 app.include_router(webhooks_router)
 
@@ -336,18 +373,31 @@ app.add_exception_handler(Exception, generic_exception_handler)
 
 # Explicit CORS preflight handlers for key endpoints
 @app.options("/{path_name:path}", include_in_schema=False)
-async def options_handler(path_name: str):
-    """Explicit OPTIONS handler for CORS preflight requests."""
+async def options_handler(request: Request, path_name: str):
+    """Explicit OPTIONS handler for CORS preflight requests.
+
+    CORSMiddleware normally handles OPTIONS, but we keep this handler to
+    guarantee a fast 200 response even when other middleware short-circuits.
+    """
     from starlette.responses import Response
-    return Response(
-        status_code=200,
-        headers={
-            "Access-Control-Allow-Origin": "*",
-            "Access-Control-Allow-Methods": "GET,POST,PUT,PATCH,DELETE,OPTIONS",
-            "Access-Control-Allow-Headers": "Authorization,Content-Type,X-API-Key,X-Nonce,X-Timestamp,X-Signature,X-CSRF-Token,X-Trace-Parent",
-            "Access-Control-Expose-Headers": "X-Request-Id",
-        }
-    )
+
+    origin = request.headers.get("origin")
+    allow_origin = ""
+    if "*" in _allowed_origins:
+        allow_origin = "*"
+    elif origin and origin in _allowed_origins:
+        allow_origin = origin
+
+    headers = {
+        "Access-Control-Allow-Methods": "GET,POST,PUT,PATCH,DELETE,OPTIONS",
+        "Access-Control-Allow-Headers": "Authorization,Content-Type,X-API-Key,X-Nonce,X-Timestamp,X-Signature,X-CSRF-Token,X-Trace-Parent",
+        "Access-Control-Expose-Headers": "X-Request-Id",
+    }
+    if allow_origin:
+        headers["Access-Control-Allow-Origin"] = allow_origin
+        headers["Vary"] = "Origin"
+
+    return Response(status_code=200, headers=headers)
 
 @app.get("/")
 def root():
@@ -368,7 +418,7 @@ def health_check():
         success=True,
         message="Service is healthy",
         data={
-            "status": "ok" if DB_AVAILABLE else "degraded",
+            "status": "ok" if status["connected"] else "degraded",
             "database": status["status"],
             "timestamp": datetime.now().isoformat()
         }

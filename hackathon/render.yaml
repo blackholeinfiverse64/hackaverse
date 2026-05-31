@@ -26,7 +26,7 @@ services:
       - key: BHIV_BUCKET_DIR
         value: "./data/bucket"
       - key: BUCKET_DB_NAME
-        value: "blackholeinifverse60_db_user"
+        value: "hackaverse_db"
       # SECURITY: CORS locked to known frontend + TANTRA domains only
       - key: ALLOWED_ORIGINS
         value: "https://hackaverse-mu.vercel.app,https://hackaverse.vercel.app,https://hackaverse.blackholeinfiverse.com"

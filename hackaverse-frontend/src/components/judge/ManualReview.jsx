@@ -70,7 +70,7 @@ export default function ManualReview() {
     try {
       setLoading(true);
       await api.post('/judge/review/submit', {
-        submission_id: selectedSubmission.id,
+        submission_id: selectedSubmission.submission_id || selectedSubmission.id,
         ...reviewData,
         final_score: (reviewData.clarity_score + reviewData.quality_score + reviewData.innovation_score) / 3
       });

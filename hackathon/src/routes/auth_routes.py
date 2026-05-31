@@ -337,13 +337,14 @@ async def refresh_token(request: RefreshTokenRequest):
         raise HTTPException(status_code=500, detail="Token refresh failed")
 
 @router.post("/logout", summary="Logout user")
-async def logout(refresh_token: str):
+async def logout(body: RefreshTokenRequest):
     """
     Logout user by invalidating refresh token
     
     - **refresh_token**: Refresh token to invalidate
     """
     try:
+        refresh_token = body.refresh_token
         db = get_db()
         if db is not None:
             result = db[COLLECTIONS["sessions"]].delete_one({

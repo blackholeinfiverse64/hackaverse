@@ -29,7 +29,8 @@ const ParticipantHome = () => {
       const response = await api.get('/hackathons/active');
       const data = response.data;
       if (data.success) {
-        setHackathons(Array.isArray(data.data) ? data.data : []);
+        const hData = data.data;
+        setHackathons(Array.isArray(hData) ? hData : (hData?.items || []));
       } else {
         setHackathons([]);
       }

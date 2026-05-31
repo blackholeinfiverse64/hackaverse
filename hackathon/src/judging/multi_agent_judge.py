@@ -4,10 +4,10 @@ Implements 3 specialized judge agents for competition-grade judging
 with sub-criteria analysis for enhanced rubric depth
 """
 import os
-import openai
+import json
 import hashlib
 import re
-from typing import Dict, Any, List
+from typing import Dict, Any, List, Optional
 from dotenv import load_dotenv
 import logging
 import math
@@ -15,6 +15,38 @@ from .rubric import CRITERIA, WEIGHTS, SUB_CRITERIA, SUB_WEIGHTS
 
 load_dotenv()
 logger = logging.getLogger(__name__)
+
+
+def is_groq_configured() -> bool:
+    return bool(os.getenv("GROQ_API_KEY", "").strip())
+
+
+def _get_groq_client():
+    if not is_groq_configured():
+        return None
+    try:
+        from groq import Groq
+        return Groq(api_key=os.getenv("GROQ_API_KEY"))
+    except Exception as exc:
+        logger.error(f"Failed to initialize Groq client: {exc}")
+        return None
+
+
+def _parse_judge_json(raw: str) -> Optional[Dict[str, Any]]:
+    """Best-effort parse of LLM JSON response."""
+    if not raw:
+        return None
+    try:
+        return json.loads(raw)
+    except json.JSONDecodeError:
+        pass
+    match = re.search(r"\{[\s\S]*\}", raw)
+    if match:
+        try:
+            return json.loads(match.group(0))
+        except json.JSONDecodeError:
+            return None
+    return None
 
 
 # Keywords for deterministic sub-criteria scoring
@@ -375,13 +407,11 @@ class MultiAgentJudge:
         """
         Initialize the Multi-Agent Judging System with 3 specialized judge agents.
         """
-        self.api_key = os.getenv("OPENAI_API_KEY")
-        if not self.api_key:
-            logger.warning("OPENAI_API_KEY not found in environment variables")
-        
-        # Initialize OpenAI client
-        openai.api_key = self.api_key
-        
+        self.groq_client = _get_groq_client()
+        self.groq_model = os.getenv("GROQ_MODEL", "llama-3.1-8b-instant")
+        if not self.groq_client:
+            logger.warning("[JUDGE] GROQ_API_KEY not configured — judge agents will use rubric scoring")
+
         # Define the three specialized judge agents
         self.judges = {
             "judge_a": {
@@ -401,97 +431,80 @@ class MultiAgentJudge:
             }
         }
 
+    def _rubric_evaluation(self, judge_id: str, submission_text: str) -> Dict[str, Any]:
+        """Deterministic rubric-based scores (no LLM)."""
+        judge_info = self.judges[judge_id]
+        specialty = judge_info["specialty"]
+        scores = {}
+        for criterion in CRITERIA.keys():
+            sub = calculate_sub_criteria_scores(submission_text, criterion)
+            if sub:
+                avg = sum(sub.values()) / len(sub)
+                scores[criterion] = round(min(CRITERIA[criterion], max(1.0, avg * 2)), 2)
+            else:
+                scores[criterion] = 5.0
+        if specialty in scores:
+            scores[specialty] = min(CRITERIA[specialty], scores[specialty] + 1)
+        confidence = calculate_derived_confidence(scores)
+        return {
+            "scores": scores,
+            "explanation": f"Rubric-based evaluation by {judge_info['name']}",
+            "confidence": confidence,
+        }
+
     def _get_specialized_evaluation(self, judge_id: str, submission_text: str) -> Dict[str, Any]:
-        """
-        Get evaluation from a specialized judge agent.
-        
-        Args:
-            judge_id: ID of the judge agent
-            submission_text: The submission to evaluate
-            
-        Returns:
-            Dictionary with evaluation results
-        """
-        if not self.api_key:
-            # Return mock evaluation if no API key
-            logger.warning("No OpenAI API key found, returning mock evaluation")
-            specialty = self.judges[judge_id]["specialty"]
-            mock_scores = {criterion: 7 for criterion in CRITERIA.keys()}
-            # Derive confidence from score consistency
-            derived_confidence = calculate_derived_confidence(mock_scores)
-            return {
-                "scores": mock_scores,
-                "explanation": f"Mock evaluation by {self.judges[judge_id]['name']}",
-                "confidence": derived_confidence
-            }
-        
+        """Get evaluation from a specialized judge agent (Groq LLM or rubric)."""
+        judge_info = self.judges[judge_id]
+
+        if not self.groq_client:
+            return self._rubric_evaluation(judge_id, submission_text)
+
+        criteria_list = ", ".join(
+            f"{criterion} (max {max_score})" for criterion, max_score in CRITERIA.items()
+        )
+        prompt = (
+            f"You are {judge_info['name']}. Specialty: {judge_info['description']}.\n"
+            f"Score this hackathon submission on: {criteria_list}.\n"
+            "Respond with JSON only:\n"
+            '{"scores": {"clarity": N, "tech_depth": N, "innovation": N, ...}, '
+            '"explanation": "...", "confidence": 0.0-1.0}\n\n'
+            f"Submission:\n{submission_text[:6000]}"
+        )
+
         try:
-            judge_info = self.judges[judge_id]
-            specialty = judge_info["specialty"]
-            
-            # Create the prompt for the specialized judge
-            prompt = f"""
-            You are a specialized judge evaluating a hackathon submission. 
-            Your specialty is: {judge_info['description']}
-            
-            Evaluate the following submission according to these criteria:
-            {', '.join([f"{criterion} (max {max_score})" for criterion, max_score in CRITERIA.items()])}
-            
-            For each criterion, provide a score from 0 to the maximum score and a brief explanation.
-            
-            Submission:
-            {submission_text}
-            
-            Please respond in the following JSON format:
-            {{
-                "scores": {{
-                    {', '.join([f'"{criterion}": {CRITERIA[criterion] if criterion == specialty else max(1, CRITERIA[criterion]//2)}' for criterion in CRITERIA.keys()])}
-                }},
-                "explanation": "Brief explanation of your evaluation",
-                "confidence": 0.9
-            }}
-            """
-            
-            # Call OpenAI API
-            response = openai.ChatCompletion.create(
-                model="gpt-3.5-turbo",
+            response = self.groq_client.chat.completions.create(
+                model=self.groq_model,
                 messages=[
-                    {"role": "system", "content": f"You are an expert {judge_info['name']} evaluating hackathon submissions."},
-                    {"role": "user", "content": prompt}
+                    {
+                        "role": "system",
+                        "content": "You are an expert hackathon judge. Output valid JSON only.",
+                    },
+                    {"role": "user", "content": prompt},
                 ],
-                temperature=0.3,
-                max_tokens=800
+                temperature=0.2,
+                max_tokens=800,
             )
-            
-            # Extract the response
-            evaluation_text = response.choices[0].message.content
-            logger.info(f"LLM evaluation completed by {judge_info['name']}: {evaluation_text}")
-            
-            # For now, return mock structured response
-            # In production, you would properly parse the JSON response
-            specialty_score = 8 if specialty == "tech_depth" else 7
-            other_scores = {criterion: 7 if criterion != specialty else specialty_score for criterion in CRITERIA.keys()}
-            
-            # Derive confidence from score consistency
-            derived_confidence = calculate_derived_confidence(other_scores)
-            
-            return {
-                "scores": other_scores,
-                "explanation": f"Evaluation by {judge_info['name']}: {evaluation_text}",
-                "confidence": derived_confidence
-            }
-            
-        except Exception as e:
-            logger.error(f"Error in specialized evaluation by {judge_id}: {str(e)}")
-            # Return fallback scores
-            fallback_scores = {criterion: 6 for criterion in CRITERIA.keys()}
-            # Derive confidence from score consistency
-            derived_confidence = calculate_derived_confidence(fallback_scores)
-            return {
-                "scores": fallback_scores,
-                "explanation": f"Error in evaluation by {judge_info['name']}: {str(e)}",
-                "confidence": derived_confidence
-            }
+            raw = response.choices[0].message.content or ""
+            parsed = _parse_judge_json(raw)
+            if parsed and isinstance(parsed.get("scores"), dict):
+                scores = {}
+                for criterion in CRITERIA.keys():
+                    val = parsed["scores"].get(criterion, 5)
+                    try:
+                        scores[criterion] = float(val)
+                    except (TypeError, ValueError):
+                        scores[criterion] = 5.0
+                confidence = normalize_confidence(parsed.get("confidence", 0.75))
+                return {
+                    "scores": scores,
+                    "explanation": parsed.get("explanation", raw[:500]),
+                    "confidence": confidence,
+                }
+            logger.warning(f"[JUDGE] Groq returned non-JSON for {judge_id}, using rubric scores")
+        except Exception as exc:
+            logger.error(f"[JUDGE] Groq evaluation failed for {judge_id}: {exc}")
+
+        return self._rubric_evaluation(judge_id, submission_text)
 
     def evaluate_submission(self, submission_text: str, team_id: str = None, tenant_id: str = None, event_id: str = None) -> Dict[str, Any]:
         """
@@ -598,21 +611,25 @@ def evaluate_submission_multi_agent(payload: dict) -> dict:
     tenant_id = payload.get("tenant_id")
     event_id = payload.get("event_id")
 
-    # Check if demo mode
-    if os.getenv("JUDGE_MODE", "ai").lower() == "demo":
-        logger.warning(f"Demo mode enabled - using fallback judging for team {team_id}, tenant {tenant_id}, event {event_id}")
+    judge_mode = os.getenv("JUDGE_MODE", "ai").lower()
+    env_mode = os.getenv("ENV", "development").lower()
+
+    if judge_mode == "demo":
+        logger.warning(f"Demo mode — hash-based demo scores for team {team_id}")
         result = create_fallback_judging_result(submission_text, team_id, tenant_id, event_id)
+    elif not is_groq_configured():
+        if env_mode == "production":
+            raise RuntimeError(
+                "GROQ_API_KEY is required for AI judging when ENV=production and JUDGE_MODE=ai. "
+                "Set GROQ_API_KEY on the server or use JUDGE_MODE=demo for demo-only environments."
+            )
+        logger.warning(
+            f"GROQ_API_KEY not set — rubric-based judging for team {team_id} (development only)"
+        )
+        result = create_rubric_judging_result(submission_text, team_id, tenant_id, event_id)
     else:
-        try:
-            # Initialize the multi-agent judging system
-            multi_agent_judge = MultiAgentJudge()
-
-            # Evaluate the submission
-            result = multi_agent_judge.evaluate_submission(submission_text, team_id, tenant_id, event_id)
-
-        except Exception as e:
-            logger.warning(f"AI judging failed for team {team_id}, tenant {tenant_id}, event {event_id}: {str(e)} - using fallback")
-            result = create_fallback_judging_result(submission_text, team_id, tenant_id, event_id)
+        multi_agent_judge = MultiAgentJudge()
+        result = multi_agent_judge.evaluate_submission(submission_text, team_id, tenant_id, event_id)
 
     # Format the response as requested
     response = {
@@ -655,6 +672,32 @@ def evaluate_submission_multi_agent(payload: dict) -> dict:
         response["confidence"] = 0.25
 
     return response
+
+
+def create_rubric_judging_result(
+    submission_text: str, team_id: str = None, tenant_id: str = None, event_id: str = None
+) -> dict:
+    """Deterministic rubric scoring when Groq is unavailable (development only)."""
+    import time
+
+    judge = MultiAgentJudge()
+    individual_evaluations = {}
+    for judge_id in judge.judges.keys():
+        evaluation = judge._rubric_evaluation(judge_id, submission_text)
+        individual_evaluations[judge_id] = {
+            "judge_info": judge.judges[judge_id],
+            "evaluation": evaluation,
+        }
+    consensus = judge._calculate_consensus_scores(individual_evaluations)
+    return {
+        "team_id": team_id,
+        "tenant_id": tenant_id,
+        "event_id": event_id,
+        "individual_scores": individual_evaluations,
+        "consensus_scores": consensus,
+        "timestamp": time.time(),
+        "engine": "rubric",
+    }
 
 
 def create_fallback_judging_result(submission_text: str, team_id: str = None, tenant_id: str = None, event_id: str = None) -> dict:

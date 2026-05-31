@@ -26,14 +26,16 @@ const Teams = () => {
       console.log('Fetch Teams Response:', response);
       
       const data = response.data;
+      const teamsData = data.data;
+      const teamsList = Array.isArray(teamsData) ? teamsData : (teamsData?.items || []);
       
-      if (data.success && Array.isArray(data.data) && data.data.length > 0) {
+      if (data.success && teamsList.length > 0) {
         // /teams/list is already user-specific in backend; take first matching team.
-        let userTeam = data.data[0];
+        let userTeam = teamsList[0];
 
         const storedTeamId = localStorage.getItem('team_id');
         if (storedTeamId) {
-          const teamFromStorage = data.data.find((team) => team.team_id === storedTeamId);
+          const teamFromStorage = teamsList.find((team) => team.team_id === storedTeamId);
           if (teamFromStorage) {
             userTeam = teamFromStorage;
           }

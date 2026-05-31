@@ -1,8 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
-import { API_BASE_URL } from '../../constants/appConstants';
-import { getApiKey } from '../../constants/apiKey';
+import { apiService, extractApiData } from '../../services/api';
 
 const JudgeHome = () => {
   const { logout } = useAuth();
@@ -24,41 +23,20 @@ const JudgeHome = () => {
     try {
       setIsLoading(true);
 
-      // Get pending submissions from judge API (no team filtering)
-      console.log('[JudgeHome] Fetching submitted submissions from judge endpoint');
-      const submissionsResponse = await fetch(`${API_BASE_URL}/judge/submissions?status=submitted`, {
-        method: 'GET',
-        headers: {
-          'Content-Type': 'application/json',
-          'X-API-Key': getApiKey(),
-          'Authorization': `Bearer ${localStorage.getItem('token') || ''}`
-        }
-      });
+      const [pendingRes, allRes, rankRes] = await Promise.all([
+        apiService.judge.getPendingSubmissions(),
+        apiService.judge.getSubmissions({ status: 'submitted', limit: 100 }),
+        apiService.judge.getRankings({ tenant_id: 'default', event_id: 'default_event', limit: 50 }),
+      ]);
 
-      let submissions = [];
-      if (submissionsResponse.ok) {
-        const payload = await submissionsResponse.json();
-        submissions = payload.data || [];
-        console.log(`[JudgeHome] Received ${submissions.length} submissions`, submissions);
-      } else {
-        console.error('Failed to fetch submissions:', submissionsResponse.statusText);
-      }
+      const pending = extractApiData(pendingRes) || [];
+      const allSubmissions = extractApiData(allRes) || pending;
+      const rankData = extractApiData(rankRes) || {};
+      const rankings = rankData.rankings || [];
 
-      // Score summary by judges can still use ranking endpoint
-      const rankResponse = await fetch(`${API_BASE_URL}/judge/rank?tenant_id=default&event_id=default_event&limit=50`, {
-        method: 'GET',
-        headers: {
-          'Content-Type': 'application/json',
-          'X-API-Key': getApiKey()
-        }
-      });
-
-      const rankings = rankResponse.ok ? (await rankResponse.json()).data?.rankings || [] : [];
-
-      // Calculate stats
-      const total = submissions.length;
-      const pendingCount = submissions.filter((s) => s.status === 'submitted').length;
-      const completedCount = submissions.filter((s) => s.status !== 'submitted').length;
+      const total = allSubmissions.length;
+      const pendingCount = pending.length;
+      const completedCount = allSubmissions.filter((s) => s.judge_reviewed || s.status === 'judged').length;
       const avgScore = rankings.length > 0
         ? (rankings.reduce((sum, r) => sum + (r.total_score || 0), 0) / rankings.length).toFixed(1)
         : 0;
@@ -67,20 +45,20 @@ const JudgeHome = () => {
         pendingReviews: pendingCount,
         completedReviews: completedCount,
         averageScore: avgScore,
-        totalSubmissions: total
+        totalSubmissions: total,
       });
 
-      const recent = submissions.slice(0, 4).map((item, index) => ({
+      const recent = allSubmissions.slice(0, 4).map((item, index) => ({
         id: item.submission_id || item._id || `${item.team_id}-${index}`,
         title: item.title || `Submission by ${item.team_id}`,
         team: item.team_id || 'Unknown',
         track: item.track || 'N/A',
         status: item.status || 'submitted',
-        score: item.score || 0,
+        score: item.judge_total_score || item.score || 0,
         updated: item.submitted_at ? new Date(item.submitted_at).toLocaleString() : 'Unknown',
         submission_time: item.submitted_at || new Date().toISOString(),
         description: item.description || '',
-        github_url: item.github_link || item.github_url || null
+        github_url: item.github_link || item.github_url || null,
       }));
 
       setRecentSubmissions(recent);
@@ -126,7 +104,7 @@ const JudgeHome = () => {
             <p className="text-text-muted">Review submissions and score projects</p>
           </div>
           <div className="flex items-center gap-2">
-            <button className="btn-primary h-11 px-6" title="View Queue">
+            <button className="btn-primary h-11 px-6" title="View Queue" onClick={() => navigate('/judge/queue')}>
               <i className="uil uil-list-ul mr-2"></i>
               View Queue
             </button>

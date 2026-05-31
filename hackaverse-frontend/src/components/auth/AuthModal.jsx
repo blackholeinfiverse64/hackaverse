@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useAuth } from '../../contexts/AuthContext';
 import { useToast } from '../ui/Toast';
+import { getRoleHomePath } from '../../utils/roleRedirect';
 
 const AuthModal = ({ isOpen, onClose, redirectTo }) => {
   const [activeTab, setActiveTab] = useState('login');
@@ -61,18 +62,21 @@ const AuthModal = ({ isOpen, onClose, redirectTo }) => {
     setIsLoading(true);
     
     try {
+      let result;
       if (activeTab === 'login') {
-        await login(formData.email, formData.password);
+        result = await login(formData.email, formData.password);
         toast.success('Welcome back!');
       } else {
-        await signup(formData.name, formData.email, formData.password);
+        result = await signup(formData.name, formData.email, formData.password);
         toast.success('Account created successfully!');
       }
-      
+
       onClose();
-      
+
       if (redirectTo) {
         window.location.href = redirectTo;
+      } else if (result?.user?.role) {
+        window.location.href = getRoleHomePath(result.user.role);
       }
     } catch (error) {
       toast.error(error.message);

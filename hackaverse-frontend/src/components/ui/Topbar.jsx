@@ -70,6 +70,8 @@ const Topbar = ({ onSearchOpen, onAccountMenuOpen }) => {
 
   const handleAccountMenuToggle = () => {
     const newState = !isAccountMenuOpen;
+    setIsAccountMenuOpen(newState);
+    
     // Close search and notifications if open
     if (newState) {
       setIsSearchOpen(false);

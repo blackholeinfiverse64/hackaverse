@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { apiService } from '../../services/api';
+import { apiService, extractApiData } from '../../services/api';
 
 const RewardManagement = () => {
   const [formData, setFormData] = useState({
@@ -24,7 +24,7 @@ const RewardManagement = () => {
         event_id: 'default_event'
       });
 
-      setResult(response.data);
+      setResult(extractApiData(response) || response.data);
       setFormData({ request_id: '', outcome: 'success' });
     } catch (err) {
       console.error('Reward error:', err);

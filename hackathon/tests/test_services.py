@@ -23,7 +23,7 @@ class TestEmailService:
 
     @pytest.mark.asyncio
     async def test_send_email_skips_when_not_configured(self):
-        with patch.dict("os.environ", {"EMAIL_USER": "", "EMAIL_PASSWORD": ""}):
+        with patch.dict("os.environ", {"EMAIL_USER": "", "EMAIL_PASSWORD": "", "EMAIL_OUTBOX_FALLBACK": "false"}):
             import importlib
             import src.services.email_service as mod
             importlib.reload(mod)

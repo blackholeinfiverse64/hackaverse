@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { apiService } from '../../services/api';
+import { apiService, extractApiData } from '../../services/api';
 
 const LogsViewer = () => {
   const [logs, setLogs] = useState([]);
@@ -18,7 +18,8 @@ const LogsViewer = () => {
         event_id: 'default_event',
         limit: 100
       });
-      setLogs(response.data?.logs || []);
+      const data = extractApiData(response) || {};
+      setLogs(data.logs || []);
     } catch (error) {
       console.error('Failed to fetch logs:', error);
       setLogs([]);

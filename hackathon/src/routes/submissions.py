@@ -21,7 +21,7 @@ async def get_all_submissions(user_id: str = Depends(get_current_user_id)):
         team_ids = [t.get("team_id") for t in team_docs if t.get("team_id")]
         
         if not team_ids:
-            return APIResponse(success=True, message="No database", data=[])
+            return APIResponse(success=True, message="No submissions found", data=[])
         
         cursor = db[COLLECTIONS["submissions"]].find({"team_id": {"$in": team_ids}})
         submissions = list(cursor)
