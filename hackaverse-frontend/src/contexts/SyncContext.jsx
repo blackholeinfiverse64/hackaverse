@@ -46,7 +46,8 @@ export const SyncProvider = ({ children }) => {
 
       const [hackathonsRes, teamsRes, submissionsRes, activitiesRes] = await Promise.all(requests);
 
-      const teams = teamsRes ? (teamsRes.data?.success ? teamsRes.data.data || [] : []) : [];
+      const teamsData = teamsRes ? (teamsRes.data?.success ? teamsRes.data.data || [] : []) : [];
+      const teams = Array.isArray(teamsData) ? teamsData : (teamsData.items || []);
       const hackathons = hackathonsRes ? (hackathonsRes.data?.success ? hackathonsRes.data.data || [] : []) : [];
       const submissions = submissionsRes ? (submissionsRes.data?.success ? submissionsRes.data.data || [] : []) : [];
       const dashboardData = activitiesRes ? (activitiesRes.data?.success ? activitiesRes.data.data || {} : {}) : {};

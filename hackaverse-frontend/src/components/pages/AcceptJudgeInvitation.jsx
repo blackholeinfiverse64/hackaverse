@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
+import { API_BASE_URL } from '../../constants/appConstants';
+import { getRoleHomePath } from '../../utils/roleRedirect';
 import axios from 'axios';
 
 /**
@@ -24,7 +26,7 @@ const AcceptJudgeInvitation = () => {
 
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
-  const { user: authUser } = useAuth();
+  const { establishSession } = useAuth();
   
   // UI State
   const [state, setState] = useState('LOADING'); // LOADING, PENDING, ACCEPTING, SUCCESS, ERROR, EXPIRED
@@ -33,7 +35,10 @@ const AcceptJudgeInvitation = () => {
   const [errorMessage, setErrorMessage] = useState(null);
   const [errorDetails, setErrorDetails] = useState(null);
   const [judgeName, setJudgeName] = useState('');
+  const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
   const [nameError, setNameError] = useState(null);
+  const [passwordError, setPasswordError] = useState(null);
   
   // Token
   const token = searchParams.get('token');
@@ -71,8 +76,7 @@ const AcceptJudgeInvitation = () => {
       setErrorMessage(null);
       setErrorDetails(null);
       
-      const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
-      const url = `${apiBaseUrl}/judge/invitations/${token}`;
+      const url = `${API_BASE_URL}/judge/invitations/${token}`;
       
       console.log('[AcceptJudgeInvitation] API Call:', {
         method: 'GET',
@@ -159,6 +163,23 @@ const AcceptJudgeInvitation = () => {
     return true;
   };
 
+  const validatePassword = () => {
+    if (!password || password.length < 6) {
+      setPasswordError('Password must be at least 6 characters');
+      return false;
+    }
+    if (password !== confirmPassword) {
+      setPasswordError('Passwords do not match');
+      return false;
+    }
+    setPasswordError(null);
+    return true;
+  };
+
+  const goToJudgeDashboard = () => {
+    window.location.href = getRoleHomePath('judge');
+  };
+
   // ========================================================================
   // HANDLE ACCEPT INVITATION
   // ========================================================================
@@ -166,8 +187,7 @@ const AcceptJudgeInvitation = () => {
   const handleAcceptInvitation = async () => {
     console.log('[AcceptJudgeInvitation] Accept button clicked');
     
-    // Validate name
-    if (!validateName(judgeName)) {
+    if (!validateName(judgeName) || !validatePassword()) {
       return;
     }
     
@@ -185,8 +205,7 @@ const AcceptJudgeInvitation = () => {
     setErrorDetails(null);
     
     try {
-      const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
-      const url = `${apiBaseUrl}/judge/invitations/accept`;
+      const url = `${API_BASE_URL}/judge/invitations/accept`;
       
       console.log('[AcceptJudgeInvitation] API Call:', {
         method: 'POST',
@@ -197,7 +216,7 @@ const AcceptJudgeInvitation = () => {
       
       const response = await axios.post(
         url,
-        { token, name: judgeName },
+        { token, name: judgeName, password },
         {
           timeout: 10000,
           headers: {
@@ -214,6 +233,7 @@ const AcceptJudgeInvitation = () => {
       }
       
       const data = response.data;
+      const sessionPayload = data.data || {};
       
       // Check success flag
       if (!data.success) {
@@ -221,34 +241,32 @@ const AcceptJudgeInvitation = () => {
       }
       
       // Validate required fields
-      if (!data.data || !data.data.email) {
+      if (!sessionPayload.email) {
         console.warn('[AcceptJudgeInvitation] Response missing required fields:', data);
         throw new Error('Invalid response format: missing judge information');
       }
+
+      // Establish authenticated session when tokens are returned
+      if (sessionPayload.access_token && sessionPayload.user) {
+        establishSession(
+          sessionPayload.access_token,
+          sessionPayload.refresh_token,
+          sessionPayload.user
+        );
+      }
       
       console.log('[AcceptJudgeInvitation] Acceptance successful:', {
-        email: data.data.email,
-        name: data.data.name,
-        hackathon_name: data.data.hackathon_name
+        email: sessionPayload.email,
+        name: sessionPayload.name,
+        hackathon_name: sessionPayload.hackathon_name
       });
       
-      // Store accepted data and show success screen
-      setAcceptedData(data.data);
+      setAcceptedData(sessionPayload);
       setState('SUCCESS');
       
-      // Update AuthContext with judge role
-      const updatedUser = {
-        ...authUser,
-        role: 'judge',
-        name: data.data.name
-      };
-      localStorage.setItem('userData', JSON.stringify(updatedUser));
-      
-      // Auto-redirect after 3 seconds
       console.log('[AcceptJudgeInvitation] Scheduling redirect to /judge in 3 seconds');
       setTimeout(() => {
-        console.log('[AcceptJudgeInvitation] Redirecting to /judge');
-        window.location.href = '/judge';
+        goToJudgeDashboard();
       }, 3000);
       
     } catch (err) {
@@ -478,16 +496,7 @@ const AcceptJudgeInvitation = () => {
           {/* Action Buttons */}
           <div className="space-y-3">
             <button
-              onClick={() => {
-                console.log('[AcceptJudgeInvitation] Go to Judge Dashboard button clicked');
-                const updatedUser = {
-                  ...authUser,
-                  role: 'judge',
-                  name: acceptedData.name
-                };
-                localStorage.setItem('userData', JSON.stringify(updatedUser));
-                window.location.href = '/judge';
-              }}
+              onClick={goToJudgeDashboard}
               className="w-full bg-green-600 hover:bg-green-700 text-white font-semibold py-3 rounded-lg transition-colors duration-200"
             >
               Go to Judge Dashboard
@@ -577,11 +586,51 @@ const AcceptJudgeInvitation = () => {
             )}
           </div>
 
+          <div className="mb-4">
+            <label className="block text-sm font-semibold text-white mb-2">
+              Create Password
+            </label>
+            <input
+              type="password"
+              value={password}
+              onChange={(e) => {
+                setPassword(e.target.value);
+                if (passwordError) validatePassword();
+              }}
+              placeholder="Minimum 6 characters"
+              className={`w-full px-4 py-2 rounded-lg bg-slate-700 text-white placeholder-slate-400 border ${
+                passwordError ? 'border-red-500' : 'border-slate-600'
+              } focus:outline-none focus:border-blue-500 transition-colors`}
+            />
+          </div>
+
+          <div className="mb-6">
+            <label className="block text-sm font-semibold text-white mb-2">
+              Confirm Password
+            </label>
+            <input
+              type="password"
+              value={confirmPassword}
+              onChange={(e) => {
+                setConfirmPassword(e.target.value);
+                if (passwordError) validatePassword();
+              }}
+              onBlur={validatePassword}
+              placeholder="Re-enter password"
+              className={`w-full px-4 py-2 rounded-lg bg-slate-700 text-white placeholder-slate-400 border ${
+                passwordError ? 'border-red-500' : 'border-slate-600'
+              } focus:outline-none focus:border-blue-500 transition-colors`}
+            />
+            {passwordError && (
+              <p className="text-red-400 text-sm mt-2">{passwordError}</p>
+            )}
+          </div>
+
           {/* Action Buttons */}
           <div className="space-y-3">
             <button
               onClick={handleAcceptInvitation}
-              disabled={state === 'ACCEPTING' || !judgeName.trim()}
+              disabled={state === 'ACCEPTING' || !judgeName.trim() || !password || !confirmPassword}
               className="w-full bg-green-600 hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed text-white font-semibold py-3 rounded-lg transition-colors duration-200 flex items-center justify-center"
             >
               {state === 'ACCEPTING' ? (

@@ -4,16 +4,22 @@ Handles judge invitations, acceptance, and account creation
 """
 
 from fastapi import APIRouter, HTTPException, Depends
-from pydantic import BaseModel, EmailStr
+from pydantic import BaseModel, EmailStr, Field
 from datetime import datetime, timedelta
-from uuid import uuid4
 import secrets
 import logging
 from pymongo.errors import DuplicateKeyError
 from ..auth import get_api_key
 from ..database import get_db
+from ..db_models import COLLECTIONS
 from ..services.email_service import send_judge_invitation_email
 from ..schemas.response import APIResponse
+from ..routes.auth_routes import (
+    hash_password,
+    create_jwt_token,
+    generate_token,
+    get_user_response,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -30,7 +36,8 @@ class SendJudgeInvitationRequest(BaseModel):
 
 class AcceptJudgeInvitationRequest(BaseModel):
     token: str
-    name: str
+    name: str = Field(..., min_length=2, max_length=100)
+    password: str = Field(..., min_length=6, description="Password for judge login (min 6 chars)")
 
 class JudgeInvitationResponse(BaseModel):
     success: bool
@@ -275,85 +282,77 @@ async def accept_judge_invitation(data: AcceptJudgeInvitationRequest):
             logger.error(f"[ACCEPT_JUDGE_INVITATION] Update failed: {e}", exc_info=True)
             raise HTTPException(status_code=500, detail="Failed to update invitation status")
         
-        # Create or update judge user
+        # Create or update judge user with login credentials
         logger.debug("[ACCEPT_JUDGE_INVITATION] Creating/updating judge user")
-        judge_id = str(uuid4())
-        judge_user = {
-            "id": judge_id,
-            "email": invitation["email"],
+        email = invitation["email"]
+        existing_user = db[COLLECTIONS["users"]].find_one({"email": email})
+        user_id = existing_user.get("user_id") if existing_user else f"user_{datetime.utcnow().timestamp()}"
+        password_hash = hash_password(data.password)
+        now = datetime.utcnow()
+
+        user_doc = {
+            "user_id": user_id,
+            "email": email,
+            "name": data.name,
+            "role": "judge",
+            "password_hash": password_hash,
+            "status": "active",
+            "profile_completion": existing_user.get("profile_completion", 0) if existing_user else 0,
+            "updated_at": now.isoformat(),
+        }
+        if existing_user:
+            db[COLLECTIONS["users"]].update_one({"email": email}, {"$set": user_doc})
+        else:
+            user_doc["created_at"] = now.isoformat()
+            user_doc["skills"] = []
+            db[COLLECTIONS["users"]].insert_one(user_doc)
+
+        judge_doc = {
+            "user_id": user_id,
+            "email": email,
             "name": data.name,
             "role": "judge",
             "hackathon_id": invitation.get("hackathon_id"),
             "hackathon_name": invitation.get("hackathon_name"),
             "status": "active",
-            "created_at": datetime.utcnow(),
-            "updated_at": datetime.utcnow()
+            "updated_at": now,
         }
-        
-        # Check if judge already exists
-        existing_judge = db.judges.find_one({
-            "email": invitation["email"]
-        })
-        
+        existing_judge = db[COLLECTIONS["judges"]].find_one({"email": email})
         if existing_judge:
-            logger.info(f"[ACCEPT_JUDGE_INVITATION] Judge already exists, updating: {invitation['email']}")
-            db.judges.update_one(
-                {"email": invitation["email"]},
-                {
-                    "$set": {
-                        "name": data.name,
-                        "status": "active",
-                        "updated_at": datetime.utcnow()
-                    }
-                }
+            db[COLLECTIONS["judges"]].update_one(
+                {"email": email},
+                {"$set": judge_doc},
             )
-            judge_id = existing_judge.get("id", judge_id)
         else:
-            try:
-                insert_result = db.judges.insert_one(judge_user)
-                logger.info(f"[ACCEPT_JUDGE_INVITATION] Judge created - id={insert_result.inserted_id}")
-            except DuplicateKeyError:
-                logger.warning(f"[ACCEPT_JUDGE_INVITATION] Judge already exists")
-            except Exception as e:
-                logger.error(f"[ACCEPT_JUDGE_INVITATION] Failed to create judge: {e}", exc_info=True)
-                raise HTTPException(status_code=500, detail="Failed to create judge account")
-        
-        # Also create/update in users collection for authentication
-        logger.debug("[ACCEPT_JUDGE_INVITATION] Creating/updating user in users collection")
-        try:
-            db.users.update_one(
-                {"email": invitation["email"]},
-                {
-                    "$set": {
-                        "email": invitation["email"],
-                        "name": data.name,
-                        "role": "judge",
-                        "status": "active",
-                        "updated_at": datetime.utcnow()
-                    },
-                    "$setOnInsert": {
-                        "id": judge_id,
-                        "created_at": datetime.utcnow()
-                    }
-                },
-                upsert=True
-            )
-            logger.info(f"[ACCEPT_JUDGE_INVITATION] User record updated/created")
-        except Exception as e:
-            logger.warning(f"[ACCEPT_JUDGE_INVITATION] Failed to update users collection: {e}")
-        
-        logger.info(f"[ACCEPT_JUDGE_INVITATION] Success - judge {invitation['email']} accepted invitation")
-        
+            judge_doc["created_at"] = now
+            db[COLLECTIONS["judges"]].insert_one(judge_doc)
+
+        access_token = create_jwt_token(user_id, email)
+        refresh_token = generate_token(32)
+        db[COLLECTIONS["sessions"]].insert_one({
+            "user_id": user_id,
+            "refresh_token": refresh_token,
+            "created_at": now.isoformat(),
+            "expires_at": (now + timedelta(days=7)).isoformat(),
+        })
+
+        user_record = db[COLLECTIONS["users"]].find_one({"user_id": user_id})
+        logger.info(f"[ACCEPT_JUDGE_INVITATION] Success - judge {email} accepted invitation")
+
         return APIResponse(
             success=True,
             message="Successfully accepted judge invitation!",
             data={
-                "judge_id": judge_id,
-                "email": invitation["email"],
+                "access_token": access_token,
+                "refresh_token": refresh_token,
+                "token_type": "bearer",
+                "user": get_user_response(user_record),
+                "judge_id": user_id,
+                "email": email,
                 "name": data.name,
                 "hackathon_name": invitation.get("hackathon_name", ""),
-                "status": "active"
-            }
+                "status": "active",
+            },
         )
         
     except HTTPException:
@@ -381,7 +380,7 @@ async def get_judge_profile(judge_email: str):
             logger.error("[GET_JUDGE_PROFILE] Database unavailable")
             raise HTTPException(status_code=503, detail="Database unavailable")
         
-        judge = db.judges.find_one({"email": judge_email})
+        judge = db[COLLECTIONS["judges"]].find_one({"email": judge_email})
         
         if not judge:
             logger.warning(f"[GET_JUDGE_PROFILE] Judge not found: {judge_email}")
@@ -426,12 +425,13 @@ async def get_all_judges():
             logger.error("[GET_ALL_JUDGES] Database unavailable")
             raise HTTPException(status_code=503, detail="Database unavailable")
         
-        judges = list(db.judges.find({}))
+        judges = list(db[COLLECTIONS["judges"]].find({}))
         
         judges_data = []
         for judge in judges:
             judges_data.append({
-                "id": judge.get("id"),
+                "id": judge.get("user_id") or judge.get("id"),
+                "user_id": judge.get("user_id"),
                 "email": judge.get("email"),
                 "name": judge.get("name"),
                 "hackathon_name": judge.get("hackathon_name"),

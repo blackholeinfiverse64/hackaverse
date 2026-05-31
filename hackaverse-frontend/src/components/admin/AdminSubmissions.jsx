@@ -1,6 +1,5 @@
 import { useState, useEffect } from 'react';
-import { API_BASE_URL } from '../../constants/appConstants';
-import { getApiKey } from '../../constants/apiKey';
+import { apiService, extractApiData } from '../../services/api';
 import { useToast, ToastContainer } from '../../hooks/useToast.jsx';
 
 const AdminSubmissions = () => {
@@ -22,58 +21,38 @@ const AdminSubmissions = () => {
   const fetchSubmissions = async () => {
     try {
       setLoading(true);
-      
-      // Fetch judge rankings to get submissions
-      const response = await fetch(`${API_BASE_URL}/judge/rank`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'X-API-Key': getApiKey()
+      const response = await apiService.admin.getSubmissions();
+      const raw = extractApiData(response) || [];
+
+      let transformedSubmissions = raw.map((item, index) => ({
+        id: item.submission_id || item._id || `submission_${index}`,
+        team_id: item.team_id,
+        team_name: item.team_name || `Team ${item.team_id}`,
+        project_title: item.title || item.project_title || 'Untitled',
+        submission_time: item.submitted_at || item.created_at || new Date().toISOString(),
+        status: item.judge_reviewed ? 'judged' : (item.status || 'pending'),
+        score: item.judge_total_score || item.score || 0,
+        hackathon_id: item.hackathon_id || '',
+        hackathon_name: item.hackathon_name || 'HackaVerse',
+        criteria_scores: {
+          clarity: item.judge_clarity_score,
+          quality: item.judge_quality_score,
+          innovation: item.judge_innovation_score,
         },
-        body: JSON.stringify({
-          tenant_id: 'default',
-          event_id: 'default_event',
-          limit: 100
-        })
-      });
+        feedback: item.judge_comments || 'No feedback available',
+      }));
 
-      if (response.ok) {
-        const data = await response.json();
-        const rankings = data.data?.rankings || [];
-        
-        // Transform rankings into submission format
-        const transformedSubmissions = rankings.map((ranking, index) => ({
-          id: ranking.team_id || `submission_${index}`,
-          team_id: ranking.team_id,
-          team_name: `Team ${ranking.team_id}`,
-          project_title: `Project by ${ranking.team_id}`,
-          submission_time: ranking.submission_time || new Date().toISOString(),
-          status: ranking.total_score > 0 ? 'judged' : 'pending',
-          score: ranking.total_score || 0,
-          hackathon_id: 'hack_1708012345.67',
-          hackathon_name: 'AI Innovation Challenge',
-          criteria_scores: ranking.criteria_scores || {},
-          feedback: ranking.feedback || 'No feedback available'
-        }));
-
-        // Apply filters
-        let filteredSubmissions = transformedSubmissions;
-        
-        if (filters.status !== 'all') {
-          filteredSubmissions = filteredSubmissions.filter(s => s.status === filters.status);
-        }
-        
-        // Sort submissions
-        if (filters.sortBy === 'recent') {
-          filteredSubmissions.sort((a, b) => new Date(b.submission_time) - new Date(a.submission_time));
-        } else if (filters.sortBy === 'score') {
-          filteredSubmissions.sort((a, b) => b.score - a.score);
-        }
-
-        setSubmissions(filteredSubmissions);
-      } else {
-        showError('Failed to fetch submissions');
+      if (filters.status !== 'all') {
+        transformedSubmissions = transformedSubmissions.filter((s) => s.status === filters.status);
       }
+
+      if (filters.sortBy === 'recent') {
+        transformedSubmissions.sort((a, b) => new Date(b.submission_time) - new Date(a.submission_time));
+      } else if (filters.sortBy === 'score') {
+        transformedSubmissions.sort((a, b) => b.score - a.score);
+      }
+
+      setSubmissions(transformedSubmissions);
     } catch (error) {
       console.error('Failed to fetch submissions:', error);
       showError('Failed to load submissions');

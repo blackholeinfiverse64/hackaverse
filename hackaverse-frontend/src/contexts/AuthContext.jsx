@@ -1,5 +1,5 @@
 /* eslint-disable react-refresh/only-export-components */
-import { createContext, useContext, useState, useEffect } from 'react';
+import { createContext, useContext, useState, useEffect, useCallback } from 'react';
 import { apiService } from '../services/api';
 import { AUTH_TOKEN_KEY, USER_DATA_KEY } from '../constants/appConstants';
 
@@ -13,58 +13,77 @@ export const useAuth = () => {
   return context;
 };
 
+const buildUserData = (user) => ({
+  ...user,
+  avatar: user?.avatar || `https://api.dicebear.com/7.x/avataaars/svg?seed=${user?.email}`,
+});
+
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
 
-  // Initialize auth state from localStorage
-  useEffect(() => {
-    const token = localStorage.getItem(AUTH_TOKEN_KEY);
-    const userData = localStorage.getItem(USER_DATA_KEY);
-    
-    if (token && userData) {
-      try {
-        const parsedUser = JSON.parse(userData);
-        setUser(parsedUser);
-        setIsAuthenticated(true);
-      } catch (error) {
-        console.error('Error parsing user data:', error);
-        localStorage.removeItem(AUTH_TOKEN_KEY);
-        localStorage.removeItem(USER_DATA_KEY);
-      }
+  const establishSession = useCallback((access_token, refresh_token, userPayload) => {
+    if (!access_token) {
+      throw new Error('No access token received from server');
     }
-    setIsLoading(false);
+
+    localStorage.setItem(AUTH_TOKEN_KEY, access_token);
+    if (refresh_token) {
+      localStorage.setItem('refreshToken', refresh_token);
+    }
+
+    const userData = buildUserData(userPayload);
+    localStorage.setItem(USER_DATA_KEY, JSON.stringify(userData));
+    setUser(userData);
+    setIsAuthenticated(true);
+    return userData;
   }, []);
+
+  // Initialize auth: refresh role from server when token exists
+  useEffect(() => {
+    const initAuth = async () => {
+      const token = localStorage.getItem(AUTH_TOKEN_KEY);
+      if (!token) {
+        setIsLoading(false);
+        return;
+      }
+
+      try {
+        const response = await apiService.auth.getMe();
+        const payload = response.data?.data || response.data;
+        if (payload?.role) {
+          establishSession(token, localStorage.getItem('refreshToken'), payload);
+          setIsLoading(false);
+          return;
+        }
+      } catch (error) {
+        console.warn('[Auth] /auth/me failed, falling back to localStorage:', error.message);
+      }
+
+      const userData = localStorage.getItem(USER_DATA_KEY);
+      if (userData) {
+        try {
+          setUser(JSON.parse(userData));
+          setIsAuthenticated(true);
+        } catch (error) {
+          console.error('Error parsing user data:', error);
+          localStorage.removeItem(AUTH_TOKEN_KEY);
+          localStorage.removeItem(USER_DATA_KEY);
+        }
+      }
+      setIsLoading(false);
+    };
+
+    initAuth();
+  }, [establishSession]);
 
   const login = async (email, password) => {
     try {
       const response = await apiService.auth.login({ email, password });
-      
-      // Backend wraps responses in APIResponse envelope: {success, message, data: {...}, trace_id}
-      // The actual payload (access_token, refresh_token, user) is inside response.data.data
       const payload = response.data?.data || response.data;
-      const { access_token, refresh_token, user } = payload;
-      
-      if (!access_token) {
-        throw new Error('No access token received from server');
-      }
-
-      // Store tokens and user data
-      localStorage.setItem(AUTH_TOKEN_KEY, access_token);
-      localStorage.setItem('refreshToken', refresh_token);
-      
-      // Add avatar if not present
-      const userData = {
-        ...user,
-        avatar: user?.avatar || `https://api.dicebear.com/7.x/avataaars/svg?seed=${user?.email}`
-      };
-      
-      localStorage.setItem(USER_DATA_KEY, JSON.stringify(userData));
-      
-      setUser(userData);
-      setIsAuthenticated(true);
-      
+      const { access_token, refresh_token, user: userPayload } = payload;
+      const userData = establishSession(access_token, refresh_token, userPayload);
       return { success: true, user: userData };
     } catch (error) {
       throw new Error(error.response?.data?.message || error.response?.data?.detail || error.message || 'Login failed');
@@ -73,36 +92,15 @@ export const AuthProvider = ({ children }) => {
 
   const signup = async (name, email, password, role = 'participant') => {
     try {
-      const response = await apiService.auth.register({ 
-        name, 
-        email, 
+      const response = await apiService.auth.register({
+        name,
+        email,
         password,
-        role
+        role,
       });
-      
-      // Backend wraps responses in APIResponse envelope: {success, message, data: {...}, trace_id}
       const payload = response.data?.data || response.data;
-      const { access_token, refresh_token, user } = payload;
-      
-      if (!access_token) {
-        throw new Error('No access token received from server');
-      }
-
-      // Store tokens and user data
-      localStorage.setItem(AUTH_TOKEN_KEY, access_token);
-      localStorage.setItem('refreshToken', refresh_token);
-      
-      // Add avatar if not present
-      const userData = {
-        ...user,
-        avatar: user?.avatar || `https://api.dicebear.com/7.x/avataaars/svg?seed=${user?.email}`
-      };
-      
-      localStorage.setItem(USER_DATA_KEY, JSON.stringify(userData));
-      
-      setUser(userData);
-      setIsAuthenticated(true);
-      
+      const { access_token, refresh_token, user: userPayload } = payload;
+      const userData = establishSession(access_token, refresh_token, userPayload);
       return { success: true, user: userData };
     } catch (error) {
       throw new Error(error.response?.data?.message || error.response?.data?.detail || error.message || 'Registration failed');
@@ -116,19 +114,15 @@ export const AuthProvider = ({ children }) => {
         await apiService.auth.logout();
       }
     } catch (error) {
-      // Continue with logout even if API call fails
       console.error('Logout API error:', error);
     }
-    
-    // Clear local storage
+
     localStorage.removeItem(AUTH_TOKEN_KEY);
     localStorage.removeItem('refreshToken');
     localStorage.removeItem(USER_DATA_KEY);
-    
+
     setUser(null);
     setIsAuthenticated(false);
-    
-    // Navigate to home page after logout
     window.location.href = '/';
   };
 
@@ -138,7 +132,8 @@ export const AuthProvider = ({ children }) => {
     isLoading,
     login,
     signup,
-    logout
+    logout,
+    establishSession,
   };
 
   return (
@@ -147,5 +142,3 @@ export const AuthProvider = ({ children }) => {
     </AuthContext.Provider>
   );
 };
-
-// Note: use named exports to keep the module shape predictable.

@@ -1,6 +1,7 @@
 import { useEffect, useRef } from 'react';
 import { useAuth } from '../../contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
+import { getRoleProfilePath, getRoleSettingsPath } from '../../utils/roleRedirect';
 import UIPortal from './UIPortal';
 
 const AccountMenu = ({ isOpen, onClose, triggerRef }) => {
@@ -47,13 +48,13 @@ const AccountMenu = ({ isOpen, onClose, triggerRef }) => {
     
     switch (action) {
       case 'profile':
-        navigate('/app/profile');
+        navigate(getRoleProfilePath(user?.role));
         break;
       case 'edit-profile':
-        navigate('/app/profile/edit');
+        navigate(user?.role === 'participant' ? '/app/profile/edit' : getRoleProfilePath(user?.role));
         break;
       case 'settings':
-        navigate('/app/settings');
+        navigate(getRoleSettingsPath(user?.role));
         break;
       case 'logout':
         // Use centralized logout from AuthContext

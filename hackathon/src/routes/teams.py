@@ -554,51 +554,6 @@ async def accept_team_invitation(data: TeamInvitationAccept):
         raise HTTPException(status_code=500, detail="Failed to accept invitation")
 
 # ============================================================================
-# GET INVITATION DETAILS
-# ============================================================================
-
-@router.get("/invitations/{token}")
-async def get_invitation_details(token: str):
-    """
-    Get team invitation details
-    
-    - **token**: Invitation token
-    """
-    logger.info(f"[GET_INVITATION] Starting - token={token[:20]}...")
-    
-    try:
-        db = get_db()
-        if db is None:
-            raise HTTPException(status_code=503, detail="Database unavailable")
-        
-        # Find invitation
-        invitation = db[COLLECTIONS["invitations"]].find_one({
-            "token": token,
-            "status": "pending"
-        })
-        
-        if not invitation:
-            logger.error(f"[GET_INVITATION] Invitation not found")
-            raise HTTPException(status_code=404, detail="Invalid or expired invitation")
-        
-        logger.info(f"[GET_INVITATION] Success")
-        
-        return APIResponse(success=True, message="Invitation details retrieved", data={
-                "team_id": invitation.get("team_id"),
-                "team_name": invitation.get("team_name"),
-                "invitee_email": invitation.get("invitee_email"),
-                "hackathon_name": invitation.get("hackathon_name"),
-                "created_at": invitation.get("created_at"),
-                "expires_at": invitation.get("expires_at")
-            })
-        
-    except HTTPException:
-        raise
-    except Exception as e:
-        logger.error(f"[GET_INVITATION] Error: {str(e)}", exc_info=True)
-        raise HTTPException(status_code=500, detail="Failed to get invitation details")
-
-# ============================================================================
 # GET RECEIVED INVITATIONS
 # ============================================================================
 
@@ -688,6 +643,51 @@ async def get_sent_invitations(user_id: str = Depends(get_current_user_id)):
     except Exception as e:
         logger.error(f"[GET_SENT] Error: {str(e)}", exc_info=True)
         raise HTTPException(status_code=500, detail="Failed to get invitations")
+
+# ============================================================================
+# GET INVITATION DETAILS (must be AFTER /received and /sent to avoid shadowing)
+# ============================================================================
+
+@router.get("/invitations/{token}")
+async def get_invitation_details(token: str):
+    """
+    Get team invitation details
+    
+    - **token**: Invitation token
+    """
+    logger.info(f"[GET_INVITATION] Starting - token={token[:20]}...")
+    
+    try:
+        db = get_db()
+        if db is None:
+            raise HTTPException(status_code=503, detail="Database unavailable")
+        
+        # Find invitation
+        invitation = db[COLLECTIONS["invitations"]].find_one({
+            "token": token,
+            "status": "pending"
+        })
+        
+        if not invitation:
+            logger.error(f"[GET_INVITATION] Invitation not found")
+            raise HTTPException(status_code=404, detail="Invalid or expired invitation")
+        
+        logger.info(f"[GET_INVITATION] Success")
+        
+        return APIResponse(success=True, message="Invitation details retrieved", data={
+                "team_id": invitation.get("team_id"),
+                "team_name": invitation.get("team_name"),
+                "invitee_email": invitation.get("invitee_email"),
+                "hackathon_name": invitation.get("hackathon_name"),
+                "created_at": invitation.get("created_at"),
+                "expires_at": invitation.get("expires_at")
+            })
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"[GET_INVITATION] Error: {str(e)}", exc_info=True)
+        raise HTTPException(status_code=500, detail="Failed to get invitation details")
 
 # ============================================================================
 # RESPOND TO INVITATION

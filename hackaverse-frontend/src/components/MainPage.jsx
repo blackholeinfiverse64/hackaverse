@@ -1,29 +1,14 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, memo } from 'react';
 import { useAuth } from '../contexts/AuthContext';
-import { useLocation, Navigate, useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate, Navigate } from 'react-router-dom';
 import AuthModal from './auth/AuthModal';
+import { getRoleHomePath } from '../utils/roleRedirect';
 
 const MainPage = () => {
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
-  const { isAuthenticated, user } = useAuth();
+  const { isAuthenticated, user, isLoading } = useAuth();
   const location = useLocation();
   const navigate = useNavigate();
-
-  // Debugging: Check if starfield is loaded
-  useEffect(() => {
-    const starfieldCanvas = document.getElementById('starfield-canvas');
-    if (starfieldCanvas) {
-      // nothing to do; starfield present
-    }
-  }, []);
-
-  // Check if user is already authenticated and redirect
-  useEffect(() => {
-    if (isAuthenticated && user) {
-      const redirectPath = user.role === 'admin' ? '/admin' : '/app';
-      window.location.href = redirectPath;
-    }
-  }, [isAuthenticated, user]);
 
   // Open auth modal if redirectTo is present in state
   useEffect(() => {
@@ -32,10 +17,18 @@ const MainPage = () => {
     }
   }, [location.state]);
 
-  // If already authenticated, redirect immediately
+  // If auth is still loading, show nothing (prevents flash)
+  if (isLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="w-12 h-12 border-4 border-cyan-500/30 border-t-cyan-500 rounded-full animate-spin"></div>
+      </div>
+    );
+  }
+
+  // If already authenticated, redirect using React Router (NOT window.location)
   if (isAuthenticated && user) {
-    const redirectPath = user.role === 'admin' ? '/admin' : '/app';
-    return <Navigate to={redirectPath} replace />;
+    return <Navigate to={getRoleHomePath(user.role)} replace />;
   }
 
   return (
@@ -195,7 +188,6 @@ const MainPage = () => {
           <div className="grid sm:grid-cols-2 md:grid-cols-3 gap-4 sm:gap-6">
             <div
               className="glass-card p-6 rounded-2xl hover:border-purple-500/50 transition-all duration-300 group cursor-pointer"
-              onClick={() => window.open('https://hackaverse.com/ai-mentors', '_blank')}
             >
               <div className="flex items-center gap-4">
                 <div className="w-12 h-12 rounded-xl flex items-center justify-center group-hover:transition-colors">
@@ -209,7 +201,6 @@ const MainPage = () => {
             </div>
             <div
               className="glass-card p-6 rounded-2xl hover:border-teal-500/50 transition-all duration-300 group cursor-pointer"
-              onClick={() => window.open('https://hackaverse.com/scoring', '_blank')}
             >
               <div className="flex items-center gap-4">
                 <div className="w-12 h-12 rounded-xl flex items-center justify-center group-hover:transition-colors">
@@ -223,7 +214,6 @@ const MainPage = () => {
             </div>
             <div
               className="glass-card p-6 rounded-2xl hover:border-cyan-500/50 transition-all duration-300 group cursor-pointer"
-              onClick={() => window.open('https://hackaverse.com/team-matching', '_blank')}
             >
               <div className="flex items-center gap-4">
                 <div className="w-12 h-12 rounded-xl flex items-center justify-center group-hover:transition-colors">
@@ -305,12 +295,6 @@ const MainPage = () => {
                 <div className="flex gap-2">
                   <button
                     className="text-purple-400 hover:text-white transition-colors text-sm"
-                    onClick={() => window.open('https://www.youtube.com/results?search_query=hackathon+winners+demos', '_blank')}
-                  >
-                    Watch Demos
-                  </button>
-                  <button
-                    className="text-purple-400 hover:text-white transition-colors text-sm"
                     onClick={() => navigate('/leaderboard')}
                   >
                     View All →
@@ -373,13 +357,6 @@ const MainPage = () => {
               Hall of Fame
             </button>
             <button
-              className="btn-secondary px-6"
-              onClick={() => window.open('https://www.youtube.com/results?search_query=hackathon+demos', '_blank')}
-            >
-              <i className="uil uil-play mr-2"></i>
-              Watch Winning Demos
-            </button>
-            <button
               className="btn-primary px-6"
               onClick={() => navigate('/leaderboard')}
             >
@@ -389,7 +366,6 @@ const MainPage = () => {
           </div>
         </div>
       </section>
-
 
 
       {/* Why HackaVerse Section */}
@@ -485,28 +461,24 @@ const MainPage = () => {
                   bg: 'bg-purple-500/20',
                   icon: 'text-purple-400',
                   prize: 'text-purple-400',
-                  hoverText: 'group-hover:text-purple-300'
                 },
                 teal: {
                   hoverBorder: 'hover:border-teal-500/50',
                   bg: 'bg-teal-500/20',
                   icon: 'text-teal-400',
                   prize: 'text-teal-400',
-                  hoverText: 'group-hover:text-teal-300'
                 },
                 cyan: {
                   hoverBorder: 'hover:border-cyan-500/50',
                   bg: 'bg-cyan-500/20',
                   icon: 'text-cyan-400',
                   prize: 'text-cyan-400',
-                  hoverText: 'group-hover:text-cyan-300'
                 },
                 violet: {
                   hoverBorder: 'hover:border-violet-500/50',
                   bg: 'bg-violet-500/20',
                   icon: 'text-violet-300',
                   prize: 'text-violet-300',
-                  hoverText: 'group-hover:text-violet-300'
                 }
               };
 
@@ -518,7 +490,7 @@ const MainPage = () => {
                   className={`glass-card rounded-2xl p-6 ${c.hoverBorder} transition-all duration-300 cursor-pointer group`}
                   onClick={() => document.getElementById('tracks')?.scrollIntoView({ behavior: 'smooth' })}
                 >
-                  <div className={`${c.bg} w-12 h-12 rounded-xl flex items-center justify-center mb-4 group-hover:transition-colors`}>
+                  <div className={`${c.bg} w-12 h-12 rounded-xl flex items-center justify-center mb-4`}>
                     <i className={`uil ${track.icon} ${c.icon} text-xl`}></i>
                   </div>
                   <h3 className="text-lg font-semibold mb-2">{track.name}</h3>
@@ -547,29 +519,20 @@ const MainPage = () => {
               {
                 title: 'EcoTrack - Carbon Footprint Monitor',
                 team: 'Team GreenTech',
-                image: '/api/placeholder/400/240',
                 tags: ['IoT', 'React', 'Python'],
                 description: 'Real-time carbon footprint tracking using IoT sensors and ML predictions.',
-                github: '#',
-                demo: '#'
               },
               {
                 title: 'MediChain - Healthcare Records',
                 team: 'Team HealthTech',
-                image: '/api/placeholder/400/240',
                 tags: ['Blockchain', 'React', 'Solidity'],
                 description: 'Secure, decentralized healthcare record management system.',
-                github: '#',
-                demo: '#'
               },
               {
                 title: 'CodeMentor AI - Learning Assistant',
                 team: 'Team EduTech',
-                image: '/api/placeholder/400/240',
                 tags: ['AI/ML', 'NLP', 'Python'],
                 description: 'AI-powered coding mentor that provides personalized learning paths.',
-                github: '#',
-                demo: '#'
               }
             ].map((project, i) => (
               <div key={i} className="glass-card rounded-2xl overflow-hidden hover:border-purple-500/50 transition-all duration-300 group">
@@ -586,22 +549,6 @@ const MainPage = () => {
                         {tag}
                       </span>
                     ))}
-                  </div>
-                  <div className="flex gap-3">
-                    <button
-                      className="flex-1 btn-secondary py-2 text-sm"
-                      onClick={() => window.open(`https://github.com/hackaverse/${project.title.toLowerCase().replace(/\s+/g, '-')}`, '_blank')}
-                    >
-                      <i className="uil uil-github mr-1"></i>
-                      Code
-                    </button>
-                    <button
-                      className="flex-1 btn-primary py-2 text-sm"
-                      onClick={() => window.open(`https://demo.hackaverse.com/${project.title.toLowerCase().replace(/\s+/g, '-')}`, '_blank')}
-                    >
-                      <i className="uil uil-external-link-alt mr-1"></i>
-                      Demo
-                    </button>
                   </div>
                 </div>
               </div>
@@ -653,10 +600,10 @@ const MainPage = () => {
           
           <button
             className="btn-primary px-8 py-4 text-lg"
-            onClick={() => window.open('https://guide.hackaverse.com', '_blank')}
+            onClick={() => setIsAuthModalOpen(true)}
           >
             <i className="uil uil-book-open mr-2"></i>
-            Read the Complete Guide
+            Get Started Now
           </button>
         </div>
       </section>
@@ -676,22 +623,10 @@ const MainPage = () => {
                 India's premier student hackathon platform. Build the future with AI-powered mentorship and fair competition.
               </p>
               <div className="flex gap-4">
-                <i
-                  className="uil uil-twitter text-text-muted hover:text-purple-400 cursor-pointer transition-colors text-xl"
-                  onClick={() => window.open('https://twitter.com/hackaverse', '_blank')}
-                ></i>
-                <i
-                  className="uil uil-github text-text-muted hover:text-teal-400 cursor-pointer transition-colors text-xl"
-                  onClick={() => window.open('https://github.com/hackaverse', '_blank')}
-                ></i>
-                <i
-                  className="uil uil-linkedin text-text-muted hover:text-cyan-400 cursor-pointer transition-colors text-xl"
-                  onClick={() => window.open('https://linkedin.com/company/hackaverse', '_blank')}
-                ></i>
-                <i
-                  className="uil uil-discord text-text-muted hover:text-violet-400 cursor-pointer transition-colors text-xl"
-                  onClick={() => window.open('https://discord.gg/hackaverse', '_blank')}
-                ></i>
+                <i className="uil uil-twitter text-text-muted hover:text-purple-400 cursor-pointer transition-colors text-xl"></i>
+                <i className="uil uil-github text-text-muted hover:text-teal-400 cursor-pointer transition-colors text-xl"></i>
+                <i className="uil uil-linkedin text-text-muted hover:text-cyan-400 cursor-pointer transition-colors text-xl"></i>
+                <i className="uil uil-discord text-text-muted hover:text-violet-400 cursor-pointer transition-colors text-xl"></i>
               </div>
             </div>
             
@@ -716,42 +651,16 @@ const MainPage = () => {
                 >
                   Projects
                 </div>
-                <div
-                  className="hover:text-violet-300 cursor-pointer transition-colors"
-                  onClick={() => window.open('https://mentorship.hackaverse.com', '_blank')}
-                >
-                  Mentorship
-                </div>
               </div>
             </div>
             
             <div>
               <h4 className="font-semibold mb-4">Resources</h4>
               <div className="space-y-3 text-sm text-text-muted">
-                <div
-                  className="hover:text-purple-300 cursor-pointer transition-colors"
-                  onClick={() => window.open('https://docs.hackaverse.com', '_blank')}
-                >
-                  Documentation
-                </div>
-                <div
-                  className="hover:text-teal-300 cursor-pointer transition-colors"
-                  onClick={() => window.open('https://api.hackaverse.com', '_blank')}
-                >
-                  API Reference
-                </div>
-                <div
-                  className="hover:text-cyan-300 cursor-pointer transition-colors"
-                  onClick={() => window.open('https://support.hackaverse.com', '_blank')}
-                >
-                  Support
-                </div>
-                <div
-                  className="hover:text-violet-300 cursor-pointer transition-colors"
-                  onClick={() => window.open('https://community.hackaverse.com', '_blank')}
-                >
-                  Community
-                </div>
+                <div className="hover:text-purple-300 cursor-pointer transition-colors">Documentation</div>
+                <div className="hover:text-teal-300 cursor-pointer transition-colors">API Reference</div>
+                <div className="hover:text-cyan-300 cursor-pointer transition-colors">Support</div>
+                <div className="hover:text-violet-300 cursor-pointer transition-colors">Community</div>
               </div>
             </div>
           </div>
@@ -761,24 +670,9 @@ const MainPage = () => {
               © 2025 HackaVerse. All rights reserved.
             </div>
             <div className="flex gap-6 text-sm text-text-muted">
-              <span
-                className="hover:text-purple-300 cursor-pointer transition-colors"
-                onClick={() => window.open('https://hackaverse.com/privacy', '_blank')}
-              >
-                Privacy Policy
-              </span>
-              <span
-                className="hover:text-teal-300 cursor-pointer transition-colors"
-                onClick={() => window.open('https://hackaverse.com/terms', '_blank')}
-              >
-                Terms of Service
-              </span>
-              <span
-                className="hover:text-cyan-300 cursor-pointer transition-colors"
-                onClick={() => window.open('https://hackaverse.com/code-of-conduct', '_blank')}
-              >
-                Code of Conduct
-              </span>
+              <span className="hover:text-purple-300 cursor-pointer transition-colors">Privacy Policy</span>
+              <span className="hover:text-teal-300 cursor-pointer transition-colors">Terms of Service</span>
+              <span className="hover:text-cyan-300 cursor-pointer transition-colors">Code of Conduct</span>
             </div>
           </div>
         </div>

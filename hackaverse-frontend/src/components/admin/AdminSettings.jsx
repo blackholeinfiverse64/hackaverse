@@ -1,6 +1,7 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useAuth } from '../../contexts/AuthContext';
 import InviteJudgeModal from './InviteJudgeModal';
+import { apiService, extractApiData } from '../../services/api';
 
 const AdminSettings = () => {
   const { logout } = useAuth();
@@ -8,6 +9,8 @@ const AdminSettings = () => {
   const [hasChanges, setHasChanges] = useState(false);
   const [showToast, setShowToast] = useState(false);
   const [isInviteJudgeModalOpen, setIsInviteJudgeModalOpen] = useState(false);
+  const [judges, setJudges] = useState([]);
+  const [announcements, setAnnouncements] = useState([]);
 
   const [generalSettings, setGeneralSettings] = useState({
     eventName: 'HackaVerse 2025',
@@ -27,16 +30,39 @@ const AdminSettings = () => {
     { id: 4, name: 'Open Innovation', enabled: true, order: 4 }
   ]);
 
-  const [judges] = useState([
-    { id: 1, name: 'Dr. Sarah Chen', email: 'sarah.chen@email.com', expertise: 'AI/ML', assigned: 12 },
-    { id: 2, name: 'Michael Rodriguez', email: 'michael.r@email.com', expertise: 'Web3', assigned: 8 },
-    { id: 3, name: 'Dr. Lisa Wang', email: 'lisa.wang@email.com', expertise: 'Gaming', assigned: 15 }
-  ]);
+  useEffect(() => {
+    const loadSettingsData = async () => {
+      try {
+        const [judgesRes, announcementsRes] = await Promise.all([
+          apiService.admin.getJudges(),
+          apiService.announcements.getAll(),
+        ]);
 
-  const [announcements] = useState([
-    { id: 1, title: 'Welcome to HackaVerse 2025', target: 'all', sent: '2024-01-15 10:00', status: 'sent' },
-    { id: 2, title: 'Submission Deadline Reminder', target: 'participants', sent: '2024-03-10 14:30', status: 'sent' }
-  ]);
+        const judgesData = extractApiData(judgesRes) || [];
+        setJudges(judgesData.map((j, i) => ({
+          id: j.id || j.user_id || i + 1,
+          name: j.name || j.email || 'Judge',
+          email: j.email || '',
+          expertise: j.hackathon_name || 'General',
+          assigned: j.status === 'active' ? 1 : 0,
+        })));
+
+        const annData = extractApiData(announcementsRes) || {};
+        const items = annData.items || (Array.isArray(annData) ? annData : []);
+        setAnnouncements(items.map((a, i) => ({
+          id: a._id || a.id || i + 1,
+          title: a.title || a.message || 'Announcement',
+          target: a.target || 'all',
+          sent: a.created_at ? new Date(a.created_at).toLocaleString() : 'N/A',
+          status: 'sent',
+        })));
+      } catch (error) {
+        console.error('Failed to load admin settings data:', error);
+      }
+    };
+
+    loadSettingsData();
+  }, []);
 
   const tabs = [
     { id: 'general', label: 'General', icon: 'uil-setting' },

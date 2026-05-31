@@ -13,8 +13,10 @@ secrets.toml
 
 # Data / Bucket
 data/bucket/
+data/email_outbox/
 data/failed_core_sends.log
 logs.json
+.seed_credentials.local
 
 # Archives
 *.zip

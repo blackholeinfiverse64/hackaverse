@@ -1,5 +1,6 @@
 import { useAuth } from '../../contexts/AuthContext';
 import { Navigate, useLocation } from 'react-router-dom';
+import { getRoleHomePath } from '../../utils/roleRedirect';
 
 const ProtectedRoute = ({ children, requiredRole }) => {
   const { isAuthenticated, user, isLoading } = useAuth();
@@ -26,14 +27,13 @@ const ProtectedRoute = ({ children, requiredRole }) => {
 
   if (requiredRole && user?.role !== requiredRole) {
     console.log('ProtectedRoute: Redirecting because role mismatch. User role:', user?.role, 'Required role:', requiredRole);
-    const getCorrectPath = (role) => {
-      switch (role) {
-        case 'admin': return '/admin';
-        case 'judge': return '/judge';
-        default: return '/app';
-      }
-    };
-    return <Navigate to={getCorrectPath(user?.role)} replace />;
+    const fallbackPath = getRoleHomePath(user?.role);
+    // Prevent infinite redirect loops if the fallback path is the current path
+    if (location.pathname === fallbackPath) {
+      console.warn('ProtectedRoute: Caught infinite redirect loop! Redirecting to root.');
+      return <Navigate to="/" replace />;
+    }
+    return <Navigate to={fallbackPath} replace />;
   }
 
   console.log('ProtectedRoute: Rendering children');

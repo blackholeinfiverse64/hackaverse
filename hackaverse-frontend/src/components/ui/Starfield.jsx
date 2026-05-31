@@ -23,14 +23,14 @@ const Starfield = () => {
       const numStars = Math.min(800, Math.floor(window.innerWidth * window.innerHeight / 6000));
 
       // Add cosmic elements
-      const numCosmicElements = Math.min(6, Math.floor(window.innerWidth * window.innerHeight / 40000));
+      const numCosmicElements = Math.min(4, Math.floor(window.innerWidth * window.innerHeight / 60000));
       for (let i = 0; i < numCosmicElements; i++) {
         stars.push({
           x: Math.random() * canvas.width,
           y: Math.random() * canvas.height,
-          radius: 20 + Math.random() * 40,
-          alpha: 0.05 + Math.random() * 0.1,
-          baseAlpha: 0.05 + Math.random() * 0.1,
+          radius: 10 + Math.random() * 20,
+          alpha: 0.03 + Math.random() * 0.05,
+          baseAlpha: 0.03 + Math.random() * 0.05,
           twinkle: Math.random() * 0.01 + 0.003,
           phase: Math.random() * Math.PI * 2,
           color: ['#BF40BF', '#C030D8', '#00F2EA', '#2DD4BF'][Math.floor(Math.random() * 4)],
@@ -81,12 +81,7 @@ const Starfield = () => {
     const animate = () => {
       ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-      // Draw cosmic background gradient
-      const gradient = ctx.createLinearGradient(0, 0, 0, canvas.height);
-      gradient.addColorStop(0, '#0D1128');
-      gradient.addColorStop(1, '#15193B');
-      ctx.fillStyle = gradient;
-      ctx.fillRect(0, 0, canvas.width, canvas.height);
+      // Canvas is transparent — the CSS body gradient shows through
 
       const time = Date.now() * 0.001;
 

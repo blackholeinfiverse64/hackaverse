@@ -1,5 +1,6 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import FilterToolbar from '../ui/FilterToolbar';
+import { apiService, extractApiData } from '../../services/api';
 
 const JudgeScores = () => {
   const [filters, setFilters] = useState({
@@ -9,56 +10,77 @@ const JudgeScores = () => {
     needsRevision: false
   });
   const [hasChanges, setHasChanges] = useState(false);
-
-  const [summary] = useState({
-    avgScore: 7.8,
-    median: 8.0,
-    countScored: 12,
-    consistency: 'High'
+  const [isLoading, setIsLoading] = useState(true);
+  const [summary, setSummary] = useState({
+    avgScore: 0,
+    median: 0,
+    countScored: 0,
+    consistency: 'N/A'
   });
-
-  const [myScores] = useState([
-    {
-      id: 1,
-      submission: 'AI Campus Navigator',
-      team: 'Team Alpha',
-      myScore: 8.5,
-      finalScore: 8.2,
-      deviation: '+0.3',
-      scoredOn: '2024-03-07 14:30',
-      track: 'AI/ML',
-      rubric: {
-        innovation: 9,
-        technical: 8,
-        impact: 8,
-        presentation: 9
-      },
-      notes: 'Excellent use of computer vision. Strong technical implementation.',
-      timeSpent: '25 min'
-    },
-    {
-      id: 2,
-      submission: 'Blockchain Voting',
-      team: 'Team Beta',
-      myScore: 7.2,
-      finalScore: 7.5,
-      deviation: '-0.3',
-      scoredOn: '2024-03-07 16:15',
-      track: 'Web3',
-      rubric: {
-        innovation: 7,
-        technical: 8,
-        impact: 7,
-        presentation: 7
-      },
-      notes: 'Good concept but needs better UI/UX design.',
-      timeSpent: '18 min'
-    }
-  ]);
-
+  const [myScores, setMyScores] = useState([]);
   const [selectedScore, setSelectedScore] = useState(null);
 
-  
+  useEffect(() => {
+    fetchScores();
+  }, []);
+
+  const fetchScores = async () => {
+    try {
+      setIsLoading(true);
+      const response = await apiService.judge.getJudgeScores({
+        tenant_id: 'default',
+        event_id: 'default_event',
+        limit: 100,
+      });
+      const scores = extractApiData(response) || [];
+
+      const formatted = scores.map((item, index) => {
+        const total = item.total_score || 0;
+        return {
+          id: item.submission_id || item.team_id || index + 1,
+          submission: `Project by ${item.team_id}`,
+          team: item.team_id || 'Unknown',
+          myScore: total,
+          finalScore: total,
+          deviation: '0.0',
+          scoredOn: item.timestamp
+            ? new Date(item.timestamp).toLocaleString()
+            : 'N/A',
+          track: 'Open Innovation',
+          rubric: {
+            innovation: item.innovation || 0,
+            technical: item.quality || 0,
+            impact: item.clarity || 0,
+            presentation: item.confidence ? item.confidence * 10 : 0,
+          },
+          notes: '',
+          timeSpent: 'N/A',
+        };
+      });
+
+      const values = formatted.map((s) => s.myScore).filter(Boolean);
+      const avg = values.length
+        ? (values.reduce((a, b) => a + b, 0) / values.length).toFixed(1)
+        : 0;
+      const sorted = [...values].sort((a, b) => a - b);
+      const median = sorted.length
+        ? sorted[Math.floor(sorted.length / 2)].toFixed(1)
+        : 0;
+
+      setMyScores(formatted);
+      setSummary({
+        avgScore: avg,
+        median,
+        countScored: formatted.length,
+        consistency: formatted.length > 5 ? 'High' : formatted.length > 0 ? 'Low' : 'N/A',
+      });
+    } catch (error) {
+      console.error('Failed to fetch judge scores:', error);
+      setMyScores([]);
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   const filteredScores = myScores.filter(score => {
     if (filters.search && !score.submission.toLowerCase().includes(filters.search.toLowerCase()) && 

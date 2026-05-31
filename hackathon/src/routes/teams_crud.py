@@ -25,7 +25,7 @@ async def get_all_teams(user_id: str = Depends(get_current_user_id)):
         
         if not team_ids:
             logger.info(f"[TEAMS] No teams found for user: {user_id}")
-            return APIResponse(success=True, message="No database", data=[])
+            return APIResponse(success=True, message="No teams found", data=[])
         
         cursor = db[COLLECTIONS["teams"]].find({"team_id": {"$in": team_ids}})
         teams = list(cursor)

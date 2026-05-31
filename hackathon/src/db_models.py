@@ -122,4 +122,7 @@ COLLECTIONS = {
     "provenance_logs": "provenance_logs",
     "rewards": "rewards",
     "webhooks": "webhooks",
+    "judges": "judges",
+    "judge_invitations": "judge_invitations",
+    "judge_assignments": "judge_assignments",
 }

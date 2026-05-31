@@ -106,7 +106,9 @@ api.interceptors.response.use(
           localStorage.removeItem('authToken');
           localStorage.removeItem('refreshToken');
           localStorage.removeItem('userData');
-          window.location.href = '/';
+          if (window.location.pathname !== '/') {
+            window.location.href = '/';
+          }
           return Promise.reject(refreshError);
         } finally {
           isRefreshing = false;
@@ -117,7 +119,9 @@ api.interceptors.response.use(
       localStorage.removeItem('authToken');
       localStorage.removeItem('refreshToken');
       localStorage.removeItem('userData');
-      window.location.href = '/';
+      if (window.location.pathname !== '/') {
+        window.location.href = '/';
+      }
     } else if (error.response) {
       const status = error.response.status;
       // Capture trace_id from error responses
@@ -229,6 +233,18 @@ const validateRewardData = (data) => {
   return errors.length > 0 ? errors : null;
 };
 
+/** Unwrap standard APIResponse { success, data } from axios responses. */
+export const extractApiData = (response) => {
+  const body = response?.data;
+  if (body && typeof body === 'object' && 'data' in body) {
+    if (body.data && typeof body.data === 'object' && Array.isArray(body.data.items)) {
+      return body.data.items;
+    }
+    return body.data;
+  }
+  return body;
+};
+
 // API Service Methods with validation
 export const apiService = {
   // Authentication
@@ -257,6 +273,7 @@ export const apiService = {
       }
       return api.post('/auth/refresh', { refresh_token: refreshToken });
     },
+    getMe: () => api.get('/auth/me'),
   },
 
   // Agent endpoints
@@ -275,25 +292,19 @@ export const apiService = {
     inviteJudge: (email) => api.post('/judge/invitations/send', { email, hackathon_name: 'HackaVerse' }),
     inviteParticipant: (email, hackathonId) => api.post('/admin/invite-participant', { email, hackathonId }),
     getDashboard: () => api.get('/admin/dashboard'),
-    getRewards: () => api.get('/reward').catch(() => Promise.resolve({ data: [] })),
+    getRewards: () => api.get('/reward').catch(() => Promise.resolve({ data: { data: [] } })),
     applyReward: (data) => {
-      const validationErrors = validateRewardData(data);
-      if (validationErrors) {
-        return Promise.reject(new Error(validationErrors.join(', ')));
+      if (!data.request_id || !data.outcome) {
+        return Promise.reject(new Error('Request ID and outcome are required'));
       }
-      return api.post('/reward', data);
+      return api.post('/admin/reward', data);
     },
-    getLogs: (params) => {
-      if (params && (params.limit && isNaN(params.limit))) {
-        return Promise.reject(new Error('Invalid limit parameter'));
-      }
-      return api.get('/system/logs', { params });
-    },
+    getLogs: (params) => api.get('/system/logs', { params }),
     registerTeam: (data) => api.post('/registration', data),
-    getTeams: () => api.get('/teams'),
-    getProjects: () => api.get('/projects'),
-    getSubmissions: () => api.get('/submissions'),
-    getParticipants: () => api.get('/hackathons/{id}/participants').catch(() => Promise.resolve({ data: [] })),
+    getTeams: () => api.get('/admin/teams'),
+    getSubmissions: () => api.get('/admin/submissions'),
+    getParticipants: () => api.get('/admin/participants'),
+    getJudges: () => api.get('/judge/list'),
   },
 
   // Hackathon endpoints
@@ -397,6 +408,15 @@ export const apiService = {
       const { tenant_id = 'default', event_id = 'default_event', limit = 50 } = params;
       return api.get('/judge/rank', { params: { tenant_id, event_id, limit } });
     },
+    getQueue: (params = {}) => {
+      const { tenant_id = 'default', event_id = 'default_event' } = params;
+      return api.get('/judge/queue', { params: { tenant_id, event_id } });
+    },
+    getJudgeScores: (params = {}) => {
+      const { tenant_id = 'default', event_id = 'default_event', limit = 50 } = params;
+      return api.get('/judge/scores', { params: { tenant_id, event_id, limit } });
+    },
+    getSubmissions: (params = {}) => api.get('/judge/submissions', { params }),
     getPendingSubmissions: () => api.get('/judge/submissions/pending'),
     submitReview: (data) => api.post('/judge/review/submit', data),
     getScores: (projectId) => api.get(`/judging/scores/${projectId}`),

@@ -34,6 +34,7 @@ const RewardManagement = lazy(() => import('./components/admin/RewardManagement'
 const HackathonManagement = lazy(() => import('./components/admin/HackathonManagement'))
 const JoinHackathon = lazy(() => import('./components/pages/JoinHackathon'))
 const ManualReview = lazy(() => import('./components/judge/ManualReview'))
+const Leaderboard = lazy(() => import('./components/pages/Leaderboard'))
 const CreateTeam = lazy(() => import('./components/pages/CreateTeam'))
 const AcceptInvitation = lazy(() => import('./components/pages/AcceptInvitation'))
 const AcceptJudgeInvitation = lazy(() => import('./components/pages/AcceptJudgeInvitation'))
@@ -130,6 +131,24 @@ function App() {
                       <AuthenticatedLayout>
                         <Suspense fallback={<PageLoader />}>
                           <HackathonManagement />
+                        </Suspense>
+                      </AuthenticatedLayout>
+                    </ProtectedRoute>
+                  } />
+                  <Route path="/admin/logs" element={
+                    <ProtectedRoute requiredRole="admin">
+                      <AuthenticatedLayout>
+                        <Suspense fallback={<PageLoader />}>
+                          <LogsViewer />
+                        </Suspense>
+                      </AuthenticatedLayout>
+                    </ProtectedRoute>
+                  } />
+                  <Route path="/admin/rewards" element={
+                    <ProtectedRoute requiredRole="admin">
+                      <AuthenticatedLayout>
+                        <Suspense fallback={<PageLoader />}>
+                          <RewardManagement />
                         </Suspense>
                       </AuthenticatedLayout>
                     </ProtectedRoute>
@@ -233,6 +252,15 @@ function App() {
                       <AuthenticatedLayout>
                         <Suspense fallback={<PageLoader />}>
                           <ManualReview />
+                        </Suspense>
+                      </AuthenticatedLayout>
+                    </ProtectedRoute>
+                  } />
+                  <Route path="/judge/rankings" element={
+                    <ProtectedRoute requiredRole="judge">
+                      <AuthenticatedLayout>
+                        <Suspense fallback={<PageLoader />}>
+                          <Leaderboard />
                         </Suspense>
                       </AuthenticatedLayout>
                     </ProtectedRoute>

@@ -13,6 +13,10 @@ const AuthenticatedLayout = ({ children }) => {
     { icon: 'uil-dashboard', label: 'Dashboard', path: '/admin' },
     { icon: 'uil-calendar-alt', label: 'Hackathons', path: '/admin/hackathons' },
     { icon: 'uil-users-alt', label: 'Participants', path: '/admin/participants' },
+    { icon: 'uil-file-upload-alt', label: 'Submissions', path: '/admin/submissions' },
+    { icon: 'uil-user-plus', label: 'Register Team', path: '/admin/register-team' },
+    { icon: 'uil-gift', label: 'Rewards', path: '/admin/rewards' },
+    { icon: 'uil-file-alt', label: 'Logs', path: '/admin/logs' },
     { icon: 'uil-robot', label: 'HackaAgent', path: '/hacka-agent' },
     { icon: 'uil-cog', label: 'Settings', path: '/admin/settings' }
   ];
@@ -31,8 +35,8 @@ const AuthenticatedLayout = ({ children }) => {
     { icon: 'uil-list-ul', label: 'Queue', path: '/judge/queue' },
     { icon: 'uil-edit', label: 'Manual Review', path: '/judge/manual-review' },
     { icon: 'uil-chart-line', label: 'My Scores', path: '/judge/scores' },
+    { icon: 'uil-trophy', label: 'Rankings', path: '/judge/rankings' },
     { icon: 'uil-robot', label: 'HackaAgent', path: '/hacka-agent' },
-    { icon: 'uil-file-alt', label: 'Logs', path: '/logs' }
   ];
 
   const getSidebarItems = () => {

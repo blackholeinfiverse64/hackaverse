@@ -180,7 +180,7 @@ const AdminHome = () => {
               <h2 className="text-lg font-semibold text-white">Recent Activity</h2>
               <button
                 className="text-cyan hover:text-white text-sm"
-                onClick={() => window.open('/admin/activities', '_blank')}
+                onClick={() => navigate('/admin/logs')}
               >
                 View all
               </button>
@@ -277,7 +277,7 @@ const AdminHome = () => {
                 </button>
                 <button
                   className="w-full text-left p-3 hover:bg-white/5 rounded-xl transition-colors flex items-center gap-3"
-                  onClick={() => navigate('/admin/projects')}
+                  onClick={() => navigate('/admin/submissions')}
                 >
                   <i className="uil uil-rocket text-cyan text-xl"></i>
                   <div>
