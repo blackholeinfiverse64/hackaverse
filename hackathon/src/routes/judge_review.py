@@ -43,12 +43,13 @@ async def get_all_submissions_for_judge(status: Optional[str] = None, hackathon_
 
     for item in raw:
         has_hackathon = bool(item.get("hackathon_id") or item.get("hackathon"))
-        if not item.get("team_id") or not has_hackathon or not item.get("title"):
+        if not item.get("team_id") or not has_hackathon or not (item.get("title") or item.get("project_title")):
             logger.warning(f"Invalid submission data, skipped: {item.get('submission_id') or item.get('_id')}")
             continue
 
         item["_id"] = str(item["_id"])
         item["submission_id"] = item.get("submission_id") or str(item.get("_id"))
+        item["title"] = item.get("title") or item.get("project_title")
         if item.get("hackathon") and not item.get("hackathon_id"):
             item["hackathon_id"] = item["hackathon"]
 
@@ -87,12 +88,13 @@ async def get_pending_submissions(hackathon_id: Optional[str] = None, limit: int
 
     for item in raw:
         has_hackathon = bool(item.get("hackathon_id") or item.get("hackathon"))
-        if not item.get("team_id") or not has_hackathon or not item.get("title"):
+        if not item.get("team_id") or not has_hackathon or not (item.get("title") or item.get("project_title")):
             logger.warning(f"Invalid submission data, skipped: {item.get('submission_id') or item.get('_id')}")
             continue
 
         item["_id"] = str(item["_id"])
         item["submission_id"] = item.get("submission_id") or str(item.get("_id"))
+        item["title"] = item.get("title") or item.get("project_title")
         if item.get("hackathon") and not item.get("hackathon_id"):
             item["hackathon_id"] = item["hackathon"]
 
@@ -120,12 +122,13 @@ async def get_all_submissions(hackathon_id: Optional[str] = None, limit: int = 1
 
     for item in raw:
         has_hackathon = bool(item.get("hackathon_id") or item.get("hackathon"))
-        if not item.get("team_id") or not has_hackathon or not item.get("title"):
+        if not item.get("team_id") or not has_hackathon or not (item.get("title") or item.get("project_title")):
             logger.warning(f"Invalid submission data, skipped: {item.get('submission_id') or item.get('_id')}")
             continue
 
         item["_id"] = str(item["_id"])
         item["submission_id"] = item.get("submission_id") or str(item.get("_id"))
+        item["title"] = item.get("title") or item.get("project_title")
         if item.get("hackathon") and not item.get("hackathon_id"):
             item["hackathon_id"] = item["hackathon"]
 
@@ -163,6 +166,26 @@ async def submit_review(review: ReviewSubmit, user_id: str = Depends(get_current
         {"submission_id": review.submission_id},
         {"$set": update_fields}
     )
+
+    judgment_doc = {
+        "submission_hash": str(review.submission_id),
+        "team_id": submission.get("team_id", "unknown"),
+        "clarity": review.clarity_score,
+        "quality": review.quality_score,
+        "innovation": review.innovation_score,
+        "total_score": review.final_score,
+        "confidence": 1.0, 
+        "trace": review.comments,
+        "version": "human_v1",
+        "tenant_id": submission.get("tenant_id", "default"),
+        "event_id": submission.get("event_id", "default_event"),
+        "workspace_id": submission.get("workspace_id", None),
+        "timestamp": int(datetime.now().timestamp()),
+        "human_reviewed": True,
+        "review_type": "human",
+        "judge_id": user_id
+    }
+    db.judgments.insert_one(judgment_doc)
 
     logger.info(f"Judge {user_id} reviewed submission: {review.submission_id}")
     return APIResponse(success=True, message="Review submitted successfully", data={
