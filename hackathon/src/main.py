@@ -184,22 +184,20 @@ from starlette.middleware.base import BaseHTTPMiddleware
 app.add_middleware(CSRFMiddleware)
 
 # ============================================================================
-# CORS MIDDLEWARE — Disabled, using SimpleCORSMiddleware instead
+# CORS MIDDLEWARE
 # ============================================================================
-# The custom SimpleCORSMiddleware added earlier handles all CORS concerns
-# more reliably for development. This Starlette middleware is kept as
-# a fallback if you need more sophisticated CORS logic in production.
-# ============================================================================
-# app.add_middleware(
-#     CORSMiddleware,
-#     allow_origins=_allowed_origins,
-#     allow_credentials=True,
-#     allow_methods=["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
-#     allow_headers=["Authorization", "Content-Type", "X-API-Key", "X-Nonce",
-#                    "X-Timestamp", "X-Signature", "X-CSRF-Token", "X-Trace-Parent"],
-#     expose_headers=["X-Request-Id"],
-#     max_age=3600,
-# )
+# Enables cross-origin requests from specified origins with full support for
+# credentials, preflight requests, and custom headers.
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=_allowed_origins,
+    allow_credentials=True,
+    allow_methods=["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
+    allow_headers=["Authorization", "Content-Type", "X-API-Key", "X-Nonce",
+                   "X-Timestamp", "X-Signature", "X-CSRF-Token", "X-Trace-Parent"],
+    expose_headers=["X-Request-Id"],
+    max_age=3600,
+)
 
 # CSRF token endpoint
 @app.get("/csrf-token")
