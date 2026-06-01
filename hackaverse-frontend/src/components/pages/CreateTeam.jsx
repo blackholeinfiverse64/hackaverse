@@ -28,7 +28,9 @@ export default function CreateTeam() {
   const fetchHackathon = async () => {
     try {
       const response = await apiService.hackathons.getActive();
-      const found = response.data.data.find(h => h.id === hackathonId);
+      const hData = response.data.data;
+      const hackathonsList = Array.isArray(hData) ? hData : (hData?.items || []);
+      const found = hackathonsList.find(h => h.id === hackathonId);
       if (found) {
         setHackathon(found);
       } else {
@@ -128,8 +130,17 @@ export default function CreateTeam() {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">
-          <div className="w-12 h-12 border-4 rounded-full animate-spin mx-auto mb-4" style={{ borderColor: 'var(--neon-cyan)', borderTopColor: 'transparent' }}></div>
-          <p style={{ color: 'var(--text-muted)' }}>Loading hackathon...</p>
+          {error ? (
+            <div className="bg-red-500/20 border border-red-500/30 text-red-400 p-4 rounded-lg">
+              <p>{error}</p>
+              <button onClick={() => navigate('/app')} className="mt-4 px-4 py-2 bg-white/10 text-white rounded-lg hover:bg-white/20 transition-colors">Go Back</button>
+            </div>
+          ) : (
+            <>
+              <div className="w-12 h-12 border-4 rounded-full animate-spin mx-auto mb-4" style={{ borderColor: 'var(--neon-cyan)', borderTopColor: 'transparent' }}></div>
+              <p style={{ color: 'var(--text-muted)' }}>Loading hackathon...</p>
+            </>
+          )}
         </div>
       </div>
     );
