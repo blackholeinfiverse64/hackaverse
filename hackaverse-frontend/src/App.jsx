@@ -34,6 +34,7 @@ const RewardManagement = lazy(() => import('./components/admin/RewardManagement'
 const HackathonManagement = lazy(() => import('./components/admin/HackathonManagement'))
 const JoinHackathon = lazy(() => import('./components/pages/JoinHackathon'))
 const ManualReview = lazy(() => import('./components/judge/ManualReview'))
+const Parikshak = lazy(() => import('./components/judge/Parikshak'))
 const Leaderboard = lazy(() => import('./components/pages/Leaderboard'))
 const CreateTeam = lazy(() => import('./components/pages/CreateTeam'))
 const AcceptInvitation = lazy(() => import('./components/pages/AcceptInvitation'))
@@ -252,6 +253,15 @@ function App() {
                       <AuthenticatedLayout>
                         <Suspense fallback={<PageLoader />}>
                           <ManualReview />
+                        </Suspense>
+                      </AuthenticatedLayout>
+                    </ProtectedRoute>
+                  } />
+                  <Route path="/judge/parikshak" element={
+                    <ProtectedRoute requiredRole="judge">
+                      <AuthenticatedLayout>
+                        <Suspense fallback={<PageLoader />}>
+                          <Parikshak />
                         </Suspense>
                       </AuthenticatedLayout>
                     </ProtectedRoute>

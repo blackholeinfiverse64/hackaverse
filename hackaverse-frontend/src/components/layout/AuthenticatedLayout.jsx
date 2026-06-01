@@ -34,6 +34,7 @@ const AuthenticatedLayout = ({ children }) => {
     { icon: 'uil-dashboard', label: 'Dashboard', path: '/judge' },
     { icon: 'uil-list-ul', label: 'Queue', path: '/judge/queue' },
     { icon: 'uil-edit', label: 'Manual Review', path: '/judge/manual-review' },
+    { icon: 'uil-microscope', label: 'Parikshak', path: '/judge/parikshak' },
     { icon: 'uil-chart-line', label: 'My Scores', path: '/judge/scores' },
     { icon: 'uil-trophy', label: 'Rankings', path: '/judge/rankings' },
     { icon: 'uil-robot', label: 'HackaAgent', path: '/hacka-agent' },
