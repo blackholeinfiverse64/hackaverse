@@ -1,4 +1,5 @@
 import { createContext, useContext, useState, useEffect, useCallback } from 'react';
+import { useAuth } from './AuthContext';
 import api from '../services/api';
 
 const SyncContext = createContext();
@@ -12,6 +13,7 @@ export const useSyncContext = () => {
 };
 
 export const SyncProvider = ({ children }) => {
+  const { user } = useAuth();
   const [syncData, setSyncData] = useState({
     teams: [],
     participants: [],
@@ -36,9 +38,13 @@ export const SyncProvider = ({ children }) => {
       if (authToken) {
         requests.push(
           api.get('/teams').catch(() => null),
-          api.get('/submissions').catch(() => null),
-          api.get('/admin/dashboard').catch(() => null)
+          api.get('/submissions').catch(() => null)
         );
+        if (user?.role === 'admin') {
+          requests.push(api.get('/admin/dashboard').catch(() => null));
+        } else {
+          requests.push(null);
+        }
       } else {
         // No auth - still add null placeholders to keep array indices consistent
         requests.push(null, null, null);
