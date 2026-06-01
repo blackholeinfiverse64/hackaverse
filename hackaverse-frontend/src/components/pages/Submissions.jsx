@@ -31,15 +31,45 @@ const Submissions = () => {
     const fetchSubmissions = async () => {
       setIsLoading(true);
       try {
-        const response = await apiService.submissions.getAll();
-        const data = response.data;
-        if (data && Array.isArray(data)) {
-          setSubmissions(data);
-        } else if (data && data.data && Array.isArray(data.data)) {
-          setSubmissions(data.data);
-        } else {
-          setSubmissions([]);
-        }
+        const [subRes, teamRes] = await Promise.all([
+          apiService.submissions.getAll().catch(() => ({ data: { data: [] } })),
+          apiService.teams.getAll().catch(() => ({ data: { data: [] } }))
+        ]);
+
+        let subData = [];
+        if (subRes.data && Array.isArray(subRes.data)) subData = subRes.data;
+        else if (subRes.data?.data && Array.isArray(subRes.data.data)) subData = subRes.data.data;
+
+        let teamData = [];
+        if (teamRes.data && Array.isArray(teamRes.data)) teamData = teamRes.data;
+        else if (teamRes.data?.data && Array.isArray(teamRes.data.data)) teamData = teamRes.data.data;
+
+        const merged = [...subData];
+        const submittedTeamIds = new Set(subData.map(s => s.team_id));
+
+        teamData.forEach(team => {
+          if (!team || !team.team_id) return; // Safeguard against malformed records
+
+          if (!submittedTeamIds.has(team.team_id)) {
+            merged.push({
+              id: `placeholder-${team.team_id}`,
+              team_id: team.team_id,
+              hackathon_id: team.hackathon_id || localStorage.getItem('hackathon_id') || '',
+              project: team.project_title || 'Untitled Project',
+              title: team.project_title || 'Untitled Project',
+              team: team.team_name || 'Unnamed Team',
+              status: 'not_submitted',
+              stage: 'initial',
+              score: null,
+              submitted: 'Not Submitted',
+              track: team.track || 'Unspecified',
+              isPlaceholder: true,
+              description: team.project_description || ''
+            });
+          }
+        });
+
+        setSubmissions(merged);
       } catch (error) {
         console.error('Failed to fetch submissions:', error);
         setSubmissions([]);
@@ -119,6 +149,7 @@ const Submissions = () => {
 
   const categories = [
     { id: 'all', label: 'All', count: Array.isArray(submissions) ? submissions.length : 0 },
+    { id: 'not_submitted', label: 'Pending', count: Array.isArray(submissions) ? submissions.filter(s => s.status === 'not_submitted').length : 0 },
     { id: 'queued', label: 'Queued', count: Array.isArray(submissions) ? submissions.filter(s => s.status === 'queued').length : 0 },
     { id: 'scoring', label: 'Scoring', count: Array.isArray(submissions) ? submissions.filter(s => s.status === 'scoring').length : 0 },
     { id: 'passed', label: 'Passed', count: Array.isArray(submissions) ? submissions.filter(s => s.status === 'passed').length : 0 },
@@ -172,6 +203,21 @@ const Submissions = () => {
     setTimeout(() => setIsRefreshing(false), 500);
   };
 
+  const handleOpenSubmitModal = (placeholderInfo = null) => {
+    if (placeholderInfo) {
+      setSubmitForm({
+        name: placeholderInfo.project || '',
+        description: placeholderInfo.description || '',
+        github: '', deployment: '', video: '', track: placeholderInfo.track || '',
+        team_id: placeholderInfo.team_id,
+        hackathon_id: placeholderInfo.hackathon_id
+      });
+    } else {
+      setSubmitForm({ name: '', description: '', github: '', deployment: '', video: '', track: '' });
+    }
+    setShowSubmitModal(true);
+  };
+
   const handleSubmitProject = async (e) => {
     e.preventDefault();
     const newErrors = {};
@@ -187,8 +233,8 @@ const Submissions = () => {
       onConfirm: async () => {
         try {
           setSubmitting(true);
-          const teamId = localStorage.getItem('team_id') || 'default_team';
-          const hackathonId = localStorage.getItem('hackathon_id') || 'hack_1';
+          const teamId = submitForm.team_id || localStorage.getItem('team_id') || 'default_team';
+          const hackathonId = submitForm.hackathon_id || localStorage.getItem('hackathon_id') || 'hack_1';
 
           const payload = {
             team_id: teamId,
@@ -233,6 +279,7 @@ const Submissions = () => {
       case 'failed': return 'text-error bg-error/20 shadow-error/20';
       case 'scoring': return 'text-warning bg-warning/20 shadow-warning/20';
       case 'queued': return 'text-cyan bg-cyan/20 shadow-cyan/20';
+      case 'not_submitted': return 'text-purple-400 bg-purple-500/20 shadow-purple-500/20';
       default: return 'text-text-muted bg-gunmetal';
     }
   };
@@ -274,15 +321,27 @@ const Submissions = () => {
       <td className="px-4 py-3 text-white text-sm font-medium">{submission.score || '—'}</td>
       <td className="px-4 py-3 text-text-muted text-xs">{submission.submitted}</td>
       <td className="px-4 py-3">
-        <button
-          onClick={(e) => {
-            e.stopPropagation();
-            handleViewSubmission(submission.id);
-          }}
-          className="text-cyan hover:text-white transition-all duration-200 hover:scale-110 hover:drop-shadow-[0_0_8px_rgba(0,255,255,0.5)]"
-        >
-          <i className="uil uil-eye text-sm"></i>
-        </button>
+        {submission.isPlaceholder ? (
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              handleOpenSubmitModal(submission);
+            }}
+            className="text-xs px-3 py-1.5 bg-cyan text-black rounded hover:bg-cyan/80 transition-colors font-medium shadow-sm"
+          >
+            Submit
+          </button>
+        ) : (
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              handleViewSubmission(submission.id);
+            }}
+            className="text-cyan hover:text-white transition-all duration-200 hover:scale-110 hover:drop-shadow-[0_0_8px_rgba(0,255,255,0.5)]"
+          >
+            <i className="uil uil-eye text-sm"></i>
+          </button>
+        )}
       </td>
     </tr>
   );
@@ -312,7 +371,7 @@ const Submissions = () => {
             <p className="text-text-muted text-sm">Track and manage your project submissions</p>
           </div>
           <button
-            onClick={() => setShowSubmitModal(true)}
+            onClick={() => handleOpenSubmitModal()}
             className="px-5 py-2.5 bg-white text-black border border-gray-300 hover:bg-gray-100 font-medium rounded-lg transition-all duration-300 hover:shadow-lg flex items-center gap-2"
           >
             <i className="uil uil-plus text-sm"></i>
@@ -461,7 +520,7 @@ const Submissions = () => {
                 {filters.search ? `No submissions match "${filters.search}"` : 'No submissions match your current filters.'}
               </p>
               <button
-                onClick={() => setShowSubmitModal(true)}
+                onClick={() => handleOpenSubmitModal()}
                 className="px-6 py-3 bg-cyan hover:bg-cyan/80 text-black font-medium rounded-lg transition-all duration-300 hover:shadow-lg hover:shadow-cyan/25 hover:scale-105 animate-pulse"
               >
                 Submit Your First Project
