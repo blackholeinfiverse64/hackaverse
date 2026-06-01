@@ -101,7 +101,7 @@ const InviteParticipantModal = ({ isOpen, onClose, onSend }) => {
           <p className="text-text-secondary mt-2">Send an invitation to join the hackathon</p>
         </div>
 
-        <form onSubmit={handleSubmit} className="p-6 space-y-4">
+        <form onSubmit={handleSubmit} onKeyDown={(e) => { if (e.key === 'Enter') e.preventDefault(); }} className="p-6 space-y-4">
           <div>
             <label htmlFor="name" className="block text-sm font-medium text-white mb-2">
               Full Name *
