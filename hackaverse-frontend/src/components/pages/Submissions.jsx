@@ -223,6 +223,7 @@ const Submissions = () => {
     const newErrors = {};
     if (!submitForm.name.trim() || submitForm.name.length < 5) newErrors.name = 'Project Name must be at least 5 characters';
     if (!submitForm.description.trim() || submitForm.description.length < 50) newErrors.description = 'Description must be at least 50 characters';
+    if (submitForm.description.length > 1000) newErrors.description = 'Description must not exceed 1000 characters';
     setErrors(newErrors);
     if (Object.keys(newErrors).length > 0) return;
 
@@ -239,11 +240,9 @@ const Submissions = () => {
           const payload = {
             team_id: teamId,
             hackathon_id: hackathonId,
-            title: submitForm.name,
+            project_title: submitForm.name,
             description: submitForm.description,
-            github_link: submitForm.github,
-            demo_link: submitForm.deployment || submitForm.video,
-            submitted_by: localStorage.getItem('user_email') || ''
+            submission_text: `GitHub: ${submitForm.github || 'N/A'}\nDeployment: ${submitForm.deployment || 'N/A'}\nVideo: ${submitForm.video || 'N/A'}\n\nTrack: ${submitForm.track || 'N/A'}`
           };
 
           console.log('SUBMITTING SUBMISSION:', payload);
@@ -546,9 +545,9 @@ const Submissions = () => {
                   {errors.name && <p className="text-red-400 text-xs mt-1">{errors.name}</p>}
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-300 dark:text-gray-300 light:text-gray-700 mb-2">Description * (min 50 characters)</label>
-                  <textarea value={submitForm.description} onChange={(e) => setSubmitForm({...submitForm, description: e.target.value})} className={`w-full px-3 py-2 bg-white/5 dark:bg-white/5 light:bg-gray-100 border rounded-lg text-white dark:text-white light:text-gray-900 placeholder-gray-500 dark:placeholder-gray-500 light:placeholder-gray-400 ${errors.description ? 'border-red-500' : 'border-white/10 dark:border-white/10 light:border-gray-300'}`} rows="6" placeholder="Describe your project..." required minLength="50" />
-                  <p className={`text-xs mt-1 ${submitForm.description.length < 50 ? 'text-red-400' : 'text-gray-400 dark:text-gray-400 light:text-gray-600'}`}>{submitForm.description.length}/50 characters</p>
+                  <label className="block text-sm font-medium text-gray-300 dark:text-gray-300 light:text-gray-700 mb-2">Description * (min 50 characters, max 1000)</label>
+                  <textarea value={submitForm.description} onChange={(e) => setSubmitForm({...submitForm, description: e.target.value})} className={`w-full px-3 py-2 bg-white/5 dark:bg-white/5 light:bg-gray-100 border rounded-lg text-white dark:text-white light:text-gray-900 placeholder-gray-500 dark:placeholder-gray-500 light:placeholder-gray-400 ${errors.description ? 'border-red-500' : 'border-white/10 dark:border-white/10 light:border-gray-300'}`} rows="6" placeholder="Describe your project..." required minLength="50" maxLength="1000" />
+                  <p className={`text-xs mt-1 ${submitForm.description.length < 50 || submitForm.description.length > 1000 ? 'text-red-400' : 'text-gray-400 dark:text-gray-400 light:text-gray-600'}`}>{submitForm.description.length}/1000 characters</p>
                   {errors.description && <p className="text-red-400 text-xs mt-1">{errors.description}</p>}
                 </div>
                 <div>
