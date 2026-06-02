@@ -206,7 +206,7 @@ export default function HackathonManagement() {
           className="bg-purple-600 hover:bg-purple-700 dark:bg-purple-500 dark:hover:bg-purple-600 text-white font-medium px-6 py-2 rounded-lg transition-colors flex items-center gap-2"
         >
           <i className="uil uil-plus"></i>
-          Create Hackathon
+          Create Subject
         </button>
       </div>
 
