@@ -12,6 +12,7 @@ from src.routes.auth_routes import login, LoginRequest
 
 class _RawRequest:
     client = type("C", (), {"host": "127.0.0.1"})()
+    headers = {}
 
 
 async def main():
