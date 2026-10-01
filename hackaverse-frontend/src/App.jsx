@@ -40,6 +40,7 @@ const CreateTeam = lazy(() => import('./components/pages/CreateTeam'))
 const AcceptInvitation = lazy(() => import('./components/pages/AcceptInvitation'))
 const AcceptJudgeInvitation = lazy(() => import('./components/pages/AcceptJudgeInvitation'))
 const HackaAgent = lazy(() => import('./components/agent/HackaAgent'))
+const MahaITParticipant = lazy(() => import('./components/pages/MahaITParticipant'))
 import HealthWidget from './components/ui/HealthWidget'
 import KeyboardShortcutsModal from './components/ui/KeyboardShortcutsModal'
 
@@ -78,6 +79,11 @@ function App() {
                   <Route path="/judge/accept" element={
                     <Suspense fallback={<PageLoader />}>
                       <AcceptJudgeInvitation />
+                    </Suspense>
+                  } />
+                  <Route path="/mahait" element={
+                    <Suspense fallback={<PageLoader />}>
+                      <MahaITParticipant />
                     </Suspense>
                   } />
 
@@ -215,6 +221,15 @@ function App() {
                       <AuthenticatedLayout>
                         <Suspense fallback={<PageLoader />}>
                           <CreateTeam />
+                        </Suspense>
+                      </AuthenticatedLayout>
+                    </ProtectedRoute>
+                  } />
+                  <Route path="/app/mahait" element={
+                    <ProtectedRoute requiredRole="participant">
+                      <AuthenticatedLayout>
+                        <Suspense fallback={<PageLoader />}>
+                          <MahaITParticipant />
                         </Suspense>
                       </AuthenticatedLayout>
                     </ProtectedRoute>

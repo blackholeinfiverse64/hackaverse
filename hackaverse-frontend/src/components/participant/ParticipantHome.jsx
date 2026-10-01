@@ -26,7 +26,7 @@ const ParticipantHome = () => {
 
   const fetchHackathons = async () => {
     try {
-      const response = await api.get('/hackathons/active');
+      const response = await api.get('/api/hackathons/active');
       const data = response.data;
       if (data.success) {
         const hData = data.data;

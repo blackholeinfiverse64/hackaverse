@@ -23,10 +23,23 @@ const HealthWidget = () => {
   useEffect(() => {
     const fetchHealth = async () => {
       try {
-        const response = await api.get('/system/health');
-        const healthStatus = response.data?.status || response.data?.data?.status || 'healthy';
-        const formattedStatus = String(healthStatus).charAt(0).toUpperCase() + String(healthStatus).slice(1);
-        setHealth(formattedStatus);
+        const response = await api.get('/health');
+        const rawStatus = (
+          response.data?.data?.status ||
+          response.data?.status ||
+          (response.data?.success ? 'healthy' : 'unknown')
+        ).toLowerCase();
+
+        let normalizedStatus = 'Unknown';
+        if (rawStatus === 'ok' || rawStatus === 'healthy' || rawStatus === 'up') {
+          normalizedStatus = 'Healthy';
+        } else if (rawStatus === 'warning' || rawStatus === 'degraded') {
+          normalizedStatus = 'Warning';
+        } else if (rawStatus === 'critical' || rawStatus === 'down' || rawStatus === 'error') {
+          normalizedStatus = 'Critical';
+        }
+
+        setHealth(normalizedStatus);
       } catch (error) {
         console.error('Failed to fetch health status:', error);
         setHealth('Unknown');

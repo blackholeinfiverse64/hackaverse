@@ -14,6 +14,16 @@ const api = (axios.create || (() => axios))({
 // Request interceptor to add auth token, API key, and trace propagation
 api.interceptors.request.use(
   (config) => {
+    // Normalize URL paths to match VM backend routing contracts
+    if (config.url) {
+      if (config.url === '/hackathons' || config.url.startsWith('/hackathons/')) {
+        config.url = `/api${config.url}`;
+      } else if (config.url === '/admin/dashboard') {
+        config.url = '/api/admin/dashboard';
+      } else if (config.url === '/system/health') {
+        config.url = '/health';
+      }
+    }
     const token = localStorage.getItem('authToken');
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
@@ -115,11 +125,13 @@ api.interceptors.response.use(
         }
       }
 
-      // No refresh token — redirect to login
+      // No refresh token — only redirect if user previously had a token on a protected route
+      const hadToken = !!localStorage.getItem('authToken');
       localStorage.removeItem('authToken');
       localStorage.removeItem('refreshToken');
       localStorage.removeItem('userData');
-      if (window.location.pathname !== '/') {
+      const isProtectedRoute = /^\/(app|admin|judge)/.test(window.location.pathname);
+      if (hadToken && isProtectedRoute && window.location.pathname !== '/') {
         window.location.href = '/';
       }
     } else if (error.response) {
@@ -291,7 +303,7 @@ export const apiService = {
   admin: {
     inviteJudge: (email) => api.post('/judge/invitations/send', { email, hackathon_name: 'HackaVerse' }),
     inviteParticipant: (email, hackathonId) => api.post('/admin/invite-participant', { email, hackathonId }),
-    getDashboard: () => api.get('/admin/dashboard'),
+    getDashboard: () => api.get('/api/admin/dashboard'),
     getRewards: () => api.get('/reward').catch(() => Promise.resolve({ data: { data: [] } })),
     applyReward: (data) => {
       if (!data.request_id || !data.outcome) {
@@ -309,11 +321,11 @@ export const apiService = {
 
   // Hackathon endpoints
   hackathons: {
-    getAll: () => api.get('/hackathons'),
-    getActive: () => api.get('/hackathons/active'),
-    create: (data) => api.post('/hackathons', data),
-    update: (id, data) => api.patch(`/hackathons/${id}`, data),
-    join: (data) => api.post('/hackathons/join', data),
+    getAll: () => api.get('/api/hackathons'),
+    getActive: () => api.get('/api/hackathons/active'),
+    create: (data) => api.post('/api/hackathons', data),
+    update: (id, data) => api.patch(`/api/hackathons/${id}`, data),
+    join: (data) => api.post('/api/hackathons/join', data),
   },
 
   // System endpoints
@@ -442,6 +454,52 @@ export const apiService = {
   announcements: {
     getAll: () => api.get('/notifications/announcements'),
     create: (data) => api.post('/notifications/announcements', data),
+  },
+
+  // MahaIT endpoints
+  mahait: {
+    getContent: () => api.get('/api/mahait/content'),
+    getSubjects: () => api.get('/api/mahait/subjects'),
+    getSubject: (subjectId) => api.get(`/api/mahait/subjects/${subjectId}`),
+    getMySubject: () => {
+      const token = localStorage.getItem('authToken');
+      if (!token) return Promise.resolve({ data: { success: false, data: null } });
+      return api.get('/api/mahait/my-subject').catch(() => ({ data: { success: false, data: null } }));
+    },
+    submitRound1: (data) => api.post('/api/mahait/round1/submit', data),
+    getRound1Status: () => {
+      const token = localStorage.getItem('authToken');
+      if (!token) return Promise.resolve({ data: { success: false, data: null } });
+      return api.get('/api/mahait/round1/status').catch(() => ({ data: { success: false, data: null } }));
+    },
+    getRound2Status: () => {
+      const token = localStorage.getItem('authToken');
+      if (!token) return Promise.resolve({ data: { success: false, data: null } });
+      return api.get('/api/mahait/round2/status').catch(() => ({ data: { success: false, data: null } }));
+    },
+    getTop3: () => api.get('/api/mahait/top3'),
+    getResults: (limit = 10) => api.get('/api/mahait/results', { params: { limit } }),
+    // Section 7 Round 2 Links submission (wires to /submissions per backend contract)
+    submitRound2Links: (data) => api.post('/submissions', {
+      team_id: data.team_id,
+      project_title: data.project_title || 'MahaIT Project Submission',
+      github_link: data.github_url,
+      demo_link: data.demo_url,
+      submission_text: `PPT URL: ${data.ppt_url}\nDemo URL: ${data.demo_url}\nGitHub: ${data.github_url}\n\nNotes: ${data.notes || 'Submitted via MahaIT Participant Portal'}`,
+      description: data.notes || 'Round 2 submission with GitHub, Demo, and PPT links.',
+      hackathon_id: data.hackathon_id || null
+    }),
+    // Admin / SPOC / Judge methods
+    getRound1Queue: () => api.get('/api/mahait/round1/queue'),
+    decideRound1: (data) => api.post('/api/mahait/round1/decide', data),
+    assignSubject: (data) => api.post('/api/mahait/assign', data),
+    getAssignments: () => api.get('/api/mahait/assignments'),
+    getJudges: () => api.get('/api/mahait/judges'),
+    enrollJudge: (data) => api.post('/api/mahait/judges', data),
+    getRound2Queue: () => api.get('/api/mahait/round2/queue'),
+    evaluateRound2: (data) => api.post('/api/mahait/round2/evaluate', data),
+    broadcast: (data) => api.post('/api/mahait/broadcast', data),
+    getAudit: (limit = 50) => api.get('/api/mahait/audit', { params: { limit } }),
   },
 };
 

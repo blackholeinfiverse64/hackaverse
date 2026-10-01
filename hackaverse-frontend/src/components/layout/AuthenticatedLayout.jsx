@@ -11,6 +11,7 @@ const AuthenticatedLayout = ({ children }) => {
 
   const adminSidebarItems = [
     { icon: 'uil-dashboard', label: 'Dashboard', path: '/admin' },
+    { icon: 'uil-shield-check', label: 'MahaIT Portal', path: '/app/mahait' },
     { icon: 'uil-calendar-alt', label: 'Hackathons', path: '/admin/hackathons' },
     { icon: 'uil-users-alt', label: 'Participants', path: '/admin/participants' },
     { icon: 'uil-file-upload-alt', label: 'Submissions', path: '/admin/submissions' },
@@ -23,6 +24,7 @@ const AuthenticatedLayout = ({ children }) => {
 
   const participantSidebarItems = [
     { icon: 'uil-home', label: 'Home', path: '/app' },
+    { icon: 'uil-shield-check', label: 'MahaIT Portal', path: '/app/mahait' },
     { icon: 'uil-calendar-alt', label: 'Join Hackathon', path: '/join-hackathon' },
     { icon: 'uil-users-alt', label: 'My Team', path: '/app/teams' },
     { icon: 'uil-file-upload-alt', label: 'Submissions', path: '/app/submissions' },
@@ -32,6 +34,7 @@ const AuthenticatedLayout = ({ children }) => {
 
   const judgeSidebarItems = [
     { icon: 'uil-dashboard', label: 'Dashboard', path: '/judge' },
+    { icon: 'uil-shield-check', label: 'MahaIT Portal', path: '/app/mahait' },
     { icon: 'uil-list-ul', label: 'Queue', path: '/judge/queue' },
     { icon: 'uil-edit', label: 'Manual Review', path: '/judge/manual-review' },
     { icon: 'uil-microscope', label: 'Parikshak', path: '/judge/parikshak' },
