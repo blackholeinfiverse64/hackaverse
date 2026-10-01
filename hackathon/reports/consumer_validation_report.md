@@ -3,7 +3,7 @@
 | Field | Value |
 |-------|-------|
 | Status | **PASS** |
-| Generated | 2026-05-27 08:06:14 UTC |
+| Generated | 2026-09-28 10:23:32 UTC |
 | Checks | 7/7 passed |
 
 ## Results
@@ -13,7 +13,7 @@
 | contract_file_loaded | PASS | api_response_contract.json |
 | health_poll | PASS | APIResponse valid |
 | versioned_system_health | PASS | contract OK |
-| trace_lineage_chain | PASS | chain root=hv-940e48e14e83425a |
+| trace_lineage_chain | PASS | chain root=hv-a00332b375e34e78 |
 | auth_error_contract | PASS | error_code=AUTH_INVALID_TOKEN |
 | webhook_subscribe_contract | PASS | HTTP 503 |
 | deterministic_response_structure | PASS | success/data types stable; trace_id present each call |
@@ -21,7 +21,7 @@
 ## Log excerpt
 
 ```
-[CONSUMER] health_poll HTTP 200 trace=hv-940e48e14e83425a
+[CONSUMER] health_poll HTTP 200 trace=hv-a00332b375e34e78
 [CONSUMER] system_health HTTP 200
 [CONSUMER] auth_me HTTP 401 error_code=AUTH_INVALID_TOKEN
 [CONSUMER] webhook_subscribe HTTP 503

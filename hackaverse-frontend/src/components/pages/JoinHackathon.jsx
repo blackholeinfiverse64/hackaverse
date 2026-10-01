@@ -14,9 +14,10 @@ export default function JoinHackathon() {
   const fetchHackathons = async () => {
     try {
       setLoading(true);
-      const response = await api.get('/hackathons/active');
-      // API returns { data: { items: [...], pagination: {...} } }
-      const hackathonList = response.data?.data?.items || [];
+      const response = await api.get('/api/hackathons/active');
+      const hackathonList = Array.isArray(response.data?.data)
+        ? response.data.data
+        : (response.data?.data?.items || []);
       setHackathons(hackathonList);
     } catch (error) {
       console.error('Failed to fetch hackathons:', error);

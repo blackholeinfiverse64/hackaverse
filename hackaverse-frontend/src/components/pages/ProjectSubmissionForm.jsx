@@ -80,38 +80,29 @@ const ProjectSubmissionForm = ({ onSuccess, onCancel }) => {
       const hackathonId = localStorage.getItem('hackathon_id');
 
       const payload = {
-        team_id: teamId || '',
-        hackathon_id: formData.hackathon,
+        team_id: teamId || 'default_team',
+        hackathon_id: formData.hackathon || 'hack_1',
+        project_title: formData.projectName,
         title: formData.projectName,
         description: formData.description,
-        github_link: formData.githubRepo || '',
-        demo_link: formData.deploymentLink || formData.demoVideo || '',
-        submitted_by: localStorage.getItem('user_email') || ''
+        submission_text: `${formData.description}\n\nGitHub: ${formData.githubRepo || 'N/A'}\nDemo: ${formData.deploymentLink || formData.demoVideo || 'N/A'}`
       };
 
       console.log('SUBMISSION PAYLOAD:', payload);
 
-      const response = await fetch(`${API_BASE_URL}/submissions`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'X-API-Key': getApiKey()
-        },
-        body: JSON.stringify(payload)
-      });
+      const response = await apiService.submissions.create(payload);
+      const data = response?.data;
+      console.log('API RESPONSE:', data);
 
-      const data = await response.json();
-      console.log('API RESPONSE:', data, 'Status:', response.status);
-
-      if (!response.ok) {
-        throw new Error(data.detail || `HTTP ${response.status}`);
+      if (!data?.success && response?.status >= 400) {
+        throw new Error(data?.message || `HTTP ${response.status}`);
       }
 
       success('Project submitted successfully!');
       onSuccess?.();
     } catch (error) {
       console.error('Submission error:', error);
-      const errorMessage = error.message || 'Failed to submit project';
+      const errorMessage = error.response?.data?.message || error.message || 'Failed to submit project';
       showError(errorMessage);
       setErrors({ submit: errorMessage });
     } finally {

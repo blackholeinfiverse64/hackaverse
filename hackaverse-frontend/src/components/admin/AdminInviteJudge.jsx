@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import axios from 'axios';
+import { API_BASE_URL } from '../../constants/appConstants';
 
 /**
  * ADMIN JUDGE INVITATION COMPONENT
@@ -67,7 +68,7 @@ const AdminInviteJudge = () => {
     setSuccessMessage(null);
     
     try {
-      const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
+      const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || API_BASE_URL;
       const apiKey = import.meta.env.VITE_API_KEY || '';
       
       const url = `${apiBaseUrl}/judge/invitations/send`;

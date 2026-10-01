@@ -6,10 +6,8 @@ export const USER_DATA_KEY = 'userData';
 const _rawBase =
   import.meta.env.VITE_API_URL ||
   import.meta.env.VITE_API_BASE_URL ||
-  (import.meta.env.DEV ? '' : 'http://localhost:8000');
-export const API_BASE_URL = !_rawBase
-  ? '/api/v1'
-  : _rawBase.endsWith('/api/v1')
-    ? _rawBase
-    : `${_rawBase.replace(/\/+$/, '')}/api/v1`;
+  'http://163.128.209.18:3012';
+
+export const API_BASE_URL = _rawBase.replace(/\/+$/, '');
 export const API_TIMEOUT = 30000; // Increased to 30 seconds for cold starts
+

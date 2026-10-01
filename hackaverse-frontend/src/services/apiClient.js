@@ -36,10 +36,24 @@ const apiClient = axios.create({
   }
 });
 
+// Interceptor to normalize legacy paths
+apiClient.interceptors.request.use((config) => {
+  if (config.url) {
+    if (config.url === '/hackathons' || config.url.startsWith('/hackathons/')) {
+      config.url = `/api${config.url}`;
+    } else if (config.url === '/admin/dashboard') {
+      config.url = '/api/admin/dashboard';
+    } else if (config.url === '/system/health') {
+      config.url = '/health';
+    }
+  }
+  return config;
+});
+
 // Admin APIs — DEPRECATED: use apiService.admin.* from api.js
 export const adminAPI = {
-  getDashboard: () => apiClient.get('/admin/dashboard'),
-  createHackathon: (data) => apiClient.post('/hackathons', data),
+  getDashboard: () => apiClient.get('/api/admin/dashboard'),
+  createHackathon: (data) => apiClient.post('/api/hackathons', data),
   inviteJudge: (email) => apiClient.post('/admin/invite-judge', { email }),
   inviteParticipant: (email, hackathonId) => 
     apiClient.post('/admin/invite-participant', { email, hackathonId }),
@@ -75,7 +89,7 @@ export const announcementsAPI = {
 
 // Leaderboard APIs — DEPRECATED: use apiService.leaderboard.* from api.js
 export const leaderboardAPI = {
-  getLeaderboard: (hackathonId, limit = 50) => apiClient.get(`/hackathons/${hackathonId}/leaderboard`, { params: { limit } })
+  getLeaderboard: (hackathonId, limit = 50) => apiClient.get(`/api/hackathons/${hackathonId}/leaderboard`, { params: { limit } })
 };
 
 export default apiClient;

@@ -14,7 +14,7 @@ const localStorageMock = (() => {
 Object.defineProperty(globalThis, 'localStorage', { value: localStorageMock });
 
 // Mock import.meta.env
-vi.stubGlobal('import', { meta: { env: { VITE_API_URL: 'http://localhost:8000', VITE_API_KEY: 'test-key' } } });
+vi.stubGlobal('import', { meta: { env: { VITE_API_URL: 'http://163.128.209.18:3012', VITE_API_KEY: 'test-key' } } });
 
 describe('API Service Validation', () => {
   describe('validateEmail', () => {
@@ -167,8 +167,8 @@ describe('API Constants', () => {
     expect(API_TIMEOUT).toBeGreaterThan(10000);
   });
 
-  it('should default to localhost for API URL', () => {
-    const API_BASE_URL = 'http://localhost:8000';
-    expect(API_BASE_URL).toContain('localhost');
+  it('should configure correct backend API URL', () => {
+    const API_BASE_URL = 'http://163.128.209.18:3012';
+    expect(API_BASE_URL).toContain('163.128.209.18:3012');
   });
 });

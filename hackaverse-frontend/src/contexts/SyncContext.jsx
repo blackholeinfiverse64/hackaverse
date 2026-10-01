@@ -31,7 +31,7 @@ export const SyncProvider = ({ children }) => {
 
       // Build list of requests - only include protected endpoints if authenticated
       const requests = [
-        api.get('/hackathons').catch(() => null)
+        api.get('/api/hackathons').catch(() => null)
       ];
 
       // Only fetch protected endpoints if user is authenticated
@@ -41,7 +41,7 @@ export const SyncProvider = ({ children }) => {
           api.get('/submissions').catch(() => null)
         );
         if (user?.role === 'admin') {
-          requests.push(api.get('/admin/dashboard').catch(() => null));
+          requests.push(api.get('/api/admin/dashboard').catch(() => null));
         } else {
           requests.push(null);
         }

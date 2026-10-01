@@ -33,7 +33,7 @@ export default function HackathonManagement() {
   const fetchHackathons = async () => {
     try {
       setLoading(true);
-      const response = await fetch(`${API_BASE_URL}/hackathons`, {
+      const response = await fetch(`${API_BASE_URL}/api/hackathons`, {
         headers: { 
           'X-API-Key': getApiKey()
         }
@@ -70,7 +70,7 @@ export default function HackathonManagement() {
 
   const confirmDelete = async () => {
     try {
-      const response = await fetch(`${API_BASE_URL}/hackathons/${confirmDialog.hackathonId}`, {
+      const response = await fetch(`${API_BASE_URL}/api/hackathons/${confirmDialog.hackathonId}`, {
         method: 'DELETE',
         headers: { 
           'X-API-Key': getApiKey()
@@ -115,7 +115,7 @@ export default function HackathonManagement() {
       setLoading(true);
       
       if (editingHackathon) {
-        const response = await fetch(`${API_BASE_URL}/hackathons/${editingHackathon.id}`, {
+        const response = await fetch(`${API_BASE_URL}/api/hackathons/${editingHackathon.id}`, {
           method: 'PATCH',
           headers: {
             'Content-Type': 'application/json',
@@ -132,7 +132,7 @@ export default function HackathonManagement() {
           showError('Failed to update hackathon');
         }
       } else {
-        const response = await fetch(`${API_BASE_URL}/hackathons`, {
+        const response = await fetch(`${API_BASE_URL}/api/hackathons`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -169,7 +169,7 @@ export default function HackathonManagement() {
     }
     
     try {
-      const response = await fetch(`${API_BASE_URL}/hackathons/${confirmDialog.hackathonId}`, {
+      const response = await fetch(`${API_BASE_URL}/api/hackathons/${confirmDialog.hackathonId}`, {
         method: 'PATCH',
         headers: {
           'Content-Type': 'application/json',
